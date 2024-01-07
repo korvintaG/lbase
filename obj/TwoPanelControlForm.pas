@@ -15,98 +15,98 @@ const
 
 type
   TPanelTagInfo=class
-      class_id, class_id_a:longint; // классификаторы панелей текущей и  противоположной
-      gbPanel, gbPanel_a:TGroupBox; // GroupBox панелей текущей и противоположной
-      dbg, dbg_a:TDBGridEh; // гриды панелей текущей и противоположной
-      pnCont, pnCont_a:TPanel; // состав панелей (об источнике, заметки, ....) текущей и противоположной
-      class_full_name, class_full_name_a:string; // полные пути классификаторов
-      class_name, class_name_a:string; // имена классификаторов
-      dsu, dsu_a:TdataSet; // dataSet панелей текущей и противоположной
-      tag_name, tag_name_a:string; // 'Left' или 'Right'
+      class_id, class_id_a:longint; // РєР»Р°СЃСЃРёС„РёРєР°С‚РѕСЂС‹ РїР°РЅРµР»РµР№ С‚РµРєСѓС‰РµР№ Рё РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅРѕР№
+      gbPanel, gbPanel_a:TGroupBox; // GroupBox РїР°РЅРµР»Рё С‚РµРєСѓС‰РµР№ Рё РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅРѕР№
+      dbg, dbg_a:TDBGridEh; // РіСЂРёРґС‹ РїР°РЅРµР»РµР№ С‚РµРєСѓС‰РµР№ Рё РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅРѕР№
+      pnCont, pnCont_a:TPanel; // СЃРѕСЃС‚Р°РІ РїР°РЅРµР»РµР№ (РѕР± РёСЃС‚РѕС‡РЅРёРєРµ, Р·Р°РјРµС‚РєРё, ....) С‚РµРєСѓС‰РµР№ Рё РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅРѕР№
+      class_full_name, class_full_name_a:string; // РїРѕР»РЅС‹Рµ РїСѓС‚Рё РєР»Р°СЃСЃРёС„РёРєР°С‚РѕСЂРѕРІ
+      class_name, class_name_a:string; // РёРјРµРЅР° РєР»Р°СЃСЃРёС„РёРєР°С‚РѕСЂРѕРІ
+      dsu, dsu_a:TdataSet; // dataSet РїР°РЅРµР»РµР№ С‚РµРєСѓС‰РµР№ Рё РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅРѕР№
+      tag_name, tag_name_a:string; // 'Left' РёР»Рё 'Right'
   end;
 
-  // 2-х панельный навигатор по классификаторам
+  // 2-С… РїР°РЅРµР»СЊРЅС‹Р№ РЅР°РІРёРіР°С‚РѕСЂ РїРѕ РєР»Р°СЃСЃРёС„РёРєР°С‚РѕСЂР°Рј
   TfmTwoPanelControl=class(TAliasParamForm)
     private
-      // контролы и DataSet, что обязательно должны быть означены дочерними объектами
-      m_class_left_id, m_class_right_id:integer; // ID папок левой и правой
-      m_pm_main:TPopUpMenu; // основной popUpMenu
+      // РєРѕРЅС‚СЂРѕР»С‹ Рё DataSet, С‡С‚Рѕ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕР·РЅР°С‡РµРЅС‹ РґРѕС‡РµСЂРЅРёРјРё РѕР±СЉРµРєС‚Р°РјРё
+      m_class_left_id, m_class_right_id:integer; // ID РїР°РїРѕРє Р»РµРІРѕР№ Рё РїСЂР°РІРѕР№
+      m_pm_main:TPopUpMenu; // РѕСЃРЅРѕРІРЅРѕР№ popUpMenu
       m_dsu_left, m_dsu_right:TdataSet; // DataSet
-      m_gb_left_panel, m_gb_right_panel:TGroupBox; // GroupBox - основные панели
-      m_dbg_left, m_dbg_right:TDBGridEh; // гриды
-      m_pn_cont_left, m_pn_cont_right:TPanel; // панели состава (об источнике, заметки и т.д.)
-      m_last_class_id:longint; // последний активный классификатор
+      m_gb_left_panel, m_gb_right_panel:TGroupBox; // GroupBox - РѕСЃРЅРѕРІРЅС‹Рµ РїР°РЅРµР»Рё
+      m_dbg_left, m_dbg_right:TDBGridEh; // РіСЂРёРґС‹
+      m_pn_cont_left, m_pn_cont_right:TPanel; // РїР°РЅРµР»Рё СЃРѕСЃС‚Р°РІР° (РѕР± РёСЃС‚РѕС‡РЅРёРєРµ, Р·Р°РјРµС‚РєРё Рё С‚.Рґ.)
+      m_last_class_id:longint; // РїРѕСЃР»РµРґРЅРёР№ Р°РєС‚РёРІРЅС‹Р№ РєР»Р°СЃСЃРёС„РёРєР°С‚РѕСЂ
 
-      // главные параметры
-      m_view_mode:integer; // =0 - слева каталог, справа инфо, =1-справа каталог, слева инфо, =3 - оба каталога
-      m_view_maximized:boolean;  // максимально раскрытый одиночной панели режим?
+      // РіР»Р°РІРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹
+      m_view_mode:integer; // =0 - СЃР»РµРІР° РєР°С‚Р°Р»РѕРі, СЃРїСЂР°РІР° РёРЅС„Рѕ, =1-СЃРїСЂР°РІР° РєР°С‚Р°Р»РѕРі, СЃР»РµРІР° РёРЅС„Рѕ, =3 - РѕР±Р° РєР°С‚Р°Р»РѕРіР°
+      m_view_maximized:boolean;  // РјР°РєСЃРёРјР°Р»СЊРЅРѕ СЂР°СЃРєСЂС‹С‚С‹Р№ РѕРґРёРЅРѕС‡РЅРѕР№ РїР°РЅРµР»Рё СЂРµР¶РёРј?
 
-      // вспомогательные переменные
-      m_panel_root_caption:string; // название коревой панели, обычно константа
-      m_last_scrool_tag:array[0..1] of longint; // для ускорения - чтобы не перерисовывать дважды-трижды одно и то же
+      // РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ
+      m_panel_root_caption:string; // РЅР°Р·РІР°РЅРёРµ РєРѕСЂРµРІРѕР№ РїР°РЅРµР»Рё, РѕР±С‹С‡РЅРѕ РєРѕРЅСЃС‚Р°РЅС‚Р°
+      m_last_scrool_tag:array[0..1] of longint; // РґР»СЏ СѓСЃРєРѕСЂРµРЅРёСЏ - С‡С‚РѕР±С‹ РЅРµ РїРµСЂРµСЂРёСЃРѕРІС‹РІР°С‚СЊ РґРІР°Р¶РґС‹-С‚СЂРёР¶РґС‹ РѕРґРЅРѕ Рё С‚Рѕ Р¶Рµ
 
-      procedure init; // инициализация работы с 2-панельным коммандером
-      function get_alias_def_class(tag_:integer):string; // получить alias для сохранения значений по умолчанию для панели
-      function get_alias_nav(tag_:integer):string;  // получить alias для навигации
-      function get_def_class(tag_:integer):longint; // получить папку по умолчанию для панели
-      function get_last_scrool_tag(tag_:integer):integer; // получить последний обработанный в scrool ID по тагу
-      function get_sub_class(tag_:integer;class_id_:longint):longint; // получить подкласс для ID папки панели
-      procedure actualize_pm_main_check;  // установить check popapmenu в зависимости от режима отображения
-      procedure dbg_main_cell_click(Column: TColumnEh); // действие по клику мышкой на ячейке в основном гриде
-      procedure dbg_main_key_down(Sender: TObject; var Key: Word; Shift: TShiftState); // действие по нажатию клавиши в основном гриде
-      procedure menu_action_change_panels(Sender: TObject); // поменять панели друг с другом местами
-      procedure menu_action_choose_the_same(Sender: TObject); // выбрать на другой панели тот же путь
-      procedure menu_action_set_mode_maximized(Sender: TObject);  // режим выставить 1 панель на все окно
-      procedure menu_action_set_mode_show_content(Sender: TObject); // режим выставить с просмотром содержимого
-      procedure menu_action_set_mode_2_panel(Sender: TObject); // режим выставить 2-панельный
-      procedure mode_view_recover; // восстановить режим отображения
-      procedure mode_view_save; // сохранить режим отображения
-      procedure set_def_class(tag_:integer;class_id_:longint); // установить ID папки по умолчанию для стороны конкретной панели
-      procedure set_panel_class_caption(tag_:integer); // выставить заголовок панели
+      procedure init; // РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЂР°Р±РѕС‚С‹ СЃ 2-РїР°РЅРµР»СЊРЅС‹Рј РєРѕРјРјР°РЅРґРµСЂРѕРј
+      function get_alias_def_class(tag_:integer):string; // РїРѕР»СѓС‡РёС‚СЊ alias РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ Р·РЅР°С‡РµРЅРёР№ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ РїР°РЅРµР»Рё
+      function get_alias_nav(tag_:integer):string;  // РїРѕР»СѓС‡РёС‚СЊ alias РґР»СЏ РЅР°РІРёРіР°С†РёРё
+      function get_def_class(tag_:integer):longint; // РїРѕР»СѓС‡РёС‚СЊ РїР°РїРєСѓ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ РїР°РЅРµР»Рё
+      function get_last_scrool_tag(tag_:integer):integer; // РїРѕР»СѓС‡РёС‚СЊ РїРѕСЃР»РµРґРЅРёР№ РѕР±СЂР°Р±РѕС‚Р°РЅРЅС‹Р№ РІ scrool ID РїРѕ С‚Р°РіСѓ
+      function get_sub_class(tag_:integer;class_id_:longint):longint; // РїРѕР»СѓС‡РёС‚СЊ РїРѕРґРєР»Р°СЃСЃ РґР»СЏ ID РїР°РїРєРё РїР°РЅРµР»Рё
+      procedure actualize_pm_main_check;  // СѓСЃС‚Р°РЅРѕРІРёС‚СЊ check popapmenu РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СЂРµР¶РёРјР° РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+      procedure dbg_main_cell_click(Column: TColumnEh); // РґРµР№СЃС‚РІРёРµ РїРѕ РєР»РёРєСѓ РјС‹С€РєРѕР№ РЅР° СЏС‡РµР№РєРµ РІ РѕСЃРЅРѕРІРЅРѕРј РіСЂРёРґРµ
+      procedure dbg_main_key_down(Sender: TObject; var Key: Word; Shift: TShiftState); // РґРµР№СЃС‚РІРёРµ РїРѕ РЅР°Р¶Р°С‚РёСЋ РєР»Р°РІРёС€Рё РІ РѕСЃРЅРѕРІРЅРѕРј РіСЂРёРґРµ
+      procedure menu_action_change_panels(Sender: TObject); // РїРѕРјРµРЅСЏС‚СЊ РїР°РЅРµР»Рё РґСЂСѓРі СЃ РґСЂСѓРіРѕРј РјРµСЃС‚Р°РјРё
+      procedure menu_action_choose_the_same(Sender: TObject); // РІС‹Р±СЂР°С‚СЊ РЅР° РґСЂСѓРіРѕР№ РїР°РЅРµР»Рё С‚РѕС‚ Р¶Рµ РїСѓС‚СЊ
+      procedure menu_action_set_mode_maximized(Sender: TObject);  // СЂРµР¶РёРј РІС‹СЃС‚Р°РІРёС‚СЊ 1 РїР°РЅРµР»СЊ РЅР° РІСЃРµ РѕРєРЅРѕ
+      procedure menu_action_set_mode_show_content(Sender: TObject); // СЂРµР¶РёРј РІС‹СЃС‚Р°РІРёС‚СЊ СЃ РїСЂРѕСЃРјРѕС‚СЂРѕРј СЃРѕРґРµСЂР¶РёРјРѕРіРѕ
+      procedure menu_action_set_mode_2_panel(Sender: TObject); // СЂРµР¶РёРј РІС‹СЃС‚Р°РІРёС‚СЊ 2-РїР°РЅРµР»СЊРЅС‹Р№
+      procedure mode_view_recover; // РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ СЂРµР¶РёРј РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+      procedure mode_view_save; // СЃРѕС…СЂР°РЅРёС‚СЊ СЂРµР¶РёРј РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+      procedure set_def_class(tag_:integer;class_id_:longint); // СѓСЃС‚Р°РЅРѕРІРёС‚СЊ ID РїР°РїРєРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЃС‚РѕСЂРѕРЅС‹ РєРѕРЅРєСЂРµС‚РЅРѕР№ РїР°РЅРµР»Рё
+      procedure set_panel_class_caption(tag_:integer); // РІС‹СЃС‚Р°РІРёС‚СЊ Р·Р°РіРѕР»РѕРІРѕРє РїР°РЅРµР»Рё
       procedure set_last_scrool_tag(tag_:integer;value_:longint);
-      procedure class_enter(tag_:integer;class_id_, subclass_id_:longint); // вход в папку
-      procedure class_exit(tag_:integer;old_class_id_, new_class_id_:longint); // выход из папки
+      procedure class_enter(tag_:integer;class_id_, subclass_id_:longint); // РІС…РѕРґ РІ РїР°РїРєСѓ
+      procedure class_exit(tag_:integer;old_class_id_, new_class_id_:longint); // РІС‹С…РѕРґ РёР· РїР°РїРєРё
 
     public
       IgnoreDSUScroolEvent:boolean;
 
       constructor CreateWithAlias(AOwner_: TComponent; alias_,PanelRootCaption_:string);
-      procedure AssignControls(pmMain_:TPopupMenu;  // выставить соответствие основных контролов, нельзя в конструкторе формы, т.к. на том этапе их нет
+      procedure AssignControls(pmMain_:TPopupMenu;  // РІС‹СЃС‚Р°РІРёС‚СЊ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРµ РѕСЃРЅРѕРІРЅС‹С… РєРѕРЅС‚СЂРѕР»РѕРІ, РЅРµР»СЊР·СЏ РІ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂРµ С„РѕСЂРјС‹, С‚.Рє. РЅР° С‚РѕРј СЌС‚Р°РїРµ РёС… РЅРµС‚
                             gbLeftPanel_, gbRightPanel_:TGroupBox;
                             dbgLeft_, dbgRight_:TDBGridEh;
                             pnContLeft_, pnContRight_:TPanel;
                             dsuLeft_, dsuRight_:TdataSet);
 
-      function GetTagPTI(tag_:integer):TPanelTagInfo;overload; virtual;  // получить PTI в заисимости от tag_
-      function GetAnotherTag(tag_:integer):integer; // получить ID противоложной панели
-      function GetCurClass:longint; // получить текущий классификатор
+      function GetTagPTI(tag_:integer):TPanelTagInfo;overload; virtual;  // РїРѕР»СѓС‡РёС‚СЊ PTI РІ Р·Р°РёСЃРёРјРѕСЃС‚Рё РѕС‚ tag_
+      function GetAnotherTag(tag_:integer):integer; // РїРѕР»СѓС‡РёС‚СЊ ID РїСЂРѕС‚РёРІРѕР»РѕР¶РЅРѕР№ РїР°РЅРµР»Рё
+      function GetCurClass:longint; // РїРѕР»СѓС‡РёС‚СЊ С‚РµРєСѓС‰РёР№ РєР»Р°СЃСЃРёС„РёРєР°С‚РѕСЂ
 
-      function GetFocusTag:integer; // получить ID текущей панели
+      function GetFocusTag:integer; // РїРѕР»СѓС‡РёС‚СЊ ID С‚РµРєСѓС‰РµР№ РїР°РЅРµР»Рё
 
-      procedure ClassUp(Sender_: TObject); // нажим папки '...' - вверх
-      procedure DsuAfterScroll(DataSet_: TDataSet); virtual; // действие после скрула основного dataset
-      procedure GetTagPTI(tag_:integer; PTI_:TPanelTagInfo;is_fast_:boolean=false); overload; virtual; // означить PTI в зависимости от tag_
-      procedure ResetLastScroolTag; // сброс залипания автоскрула
-      procedure SetAlias(alias_:string); // выставить новый alias (нужно при означивания ID в некоторых формах)
-      procedure SetPanelClass(tag_:integer;class_id_:integer); overload; // выставить для панели ID папки и совершить нужные действия
-      procedure SetPanelClass(tag_:integer); overload; // совершить нужные действия при выставления панели
-      procedure SetViewMode(mode_:integer;maximized_:boolean); overload; virtual; // установить режим отображения
-      procedure SetViewMode(); overload; virtual; // актуализировать режим отображения
+      procedure ClassUp(Sender_: TObject); // РЅР°Р¶РёРј РїР°РїРєРё '...' - РІРІРµСЂС…
+      procedure DsuAfterScroll(DataSet_: TDataSet); virtual; // РґРµР№СЃС‚РІРёРµ РїРѕСЃР»Рµ СЃРєСЂСѓР»Р° РѕСЃРЅРѕРІРЅРѕРіРѕ dataset
+      procedure GetTagPTI(tag_:integer; PTI_:TPanelTagInfo;is_fast_:boolean=false); overload; virtual; // РѕР·РЅР°С‡РёС‚СЊ PTI РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ tag_
+      procedure ResetLastScroolTag; // СЃР±СЂРѕСЃ Р·Р°Р»РёРїР°РЅРёСЏ Р°РІС‚РѕСЃРєСЂСѓР»Р°
+      procedure SetAlias(alias_:string); // РІС‹СЃС‚Р°РІРёС‚СЊ РЅРѕРІС‹Р№ alias (РЅСѓР¶РЅРѕ РїСЂРё РѕР·РЅР°С‡РёРІР°РЅРёСЏ ID РІ РЅРµРєРѕС‚РѕСЂС‹С… С„РѕСЂРјР°С…)
+      procedure SetPanelClass(tag_:integer;class_id_:integer); overload; // РІС‹СЃС‚Р°РІРёС‚СЊ РґР»СЏ РїР°РЅРµР»Рё ID РїР°РїРєРё Рё СЃРѕРІРµСЂС€РёС‚СЊ РЅСѓР¶РЅС‹Рµ РґРµР№СЃС‚РІРёСЏ
+      procedure SetPanelClass(tag_:integer); overload; // СЃРѕРІРµСЂС€РёС‚СЊ РЅСѓР¶РЅС‹Рµ РґРµР№СЃС‚РІРёСЏ РїСЂРё РІС‹СЃС‚Р°РІР»РµРЅРёСЏ РїР°РЅРµР»Рё
+      procedure SetViewMode(mode_:integer;maximized_:boolean); overload; virtual; // СѓСЃС‚Р°РЅРѕРІРёС‚СЊ СЂРµР¶РёРј РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+      procedure SetViewMode(); overload; virtual; // Р°РєС‚СѓР°Р»РёР·РёСЂРѕРІР°С‚СЊ СЂРµР¶РёРј РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 
-      // блок пустых методов для обязательного (!!!!!) определения в дочерних компонентах
+      // Р±Р»РѕРє РїСѓСЃС‚С‹С… РјРµС‚РѕРґРѕРІ РґР»СЏ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕРіРѕ (!!!!!) РѕРїСЂРµРґРµР»РµРЅРёСЏ РІ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚Р°С…
 
-      function GetClassClassId(class_id_:longint):longint; virtual; abstract; // получить ID папки по ID подпапки
-      function GetClassNameFull(class_id_:longint):string; virtual; abstract; // получить полный путь по ID
-      function GetClassName(class_id_:longint):string; virtual; abstract; // получить название классиифкатора по ID
-      procedure DbgDblClick(Sender_: TObject); virtual; abstract; // двойной щелчок мышью по основному гриду
-      procedure DsuAfterScroolHandle(DataSet_:TDataSet); virtual; abstract; // реальные действия при скрулинге основного датасет
-      procedure FormResize(Sender_: TObject);virtual; abstract; // действие при смене размера формы
-      procedure SetPanelClassAddAction(tag_:integer); virtual; abstract; // дополнительные действия по выбору нового классификатора
+      function GetClassClassId(class_id_:longint):longint; virtual; abstract; // РїРѕР»СѓС‡РёС‚СЊ ID РїР°РїРєРё РїРѕ ID РїРѕРґРїР°РїРєРё
+      function GetClassNameFull(class_id_:longint):string; virtual; abstract; // РїРѕР»СѓС‡РёС‚СЊ РїРѕР»РЅС‹Р№ РїСѓС‚СЊ РїРѕ ID
+      function GetClassName(class_id_:longint):string; virtual; abstract; // РїРѕР»СѓС‡РёС‚СЊ РЅР°Р·РІР°РЅРёРµ РєР»Р°СЃСЃРёРёС„РєР°С‚РѕСЂР° РїРѕ ID
+      procedure DbgDblClick(Sender_: TObject); virtual; abstract; // РґРІРѕР№РЅРѕР№ С‰РµР»С‡РѕРє РјС‹С€СЊСЋ РїРѕ РѕСЃРЅРѕРІРЅРѕРјСѓ РіСЂРёРґСѓ
+      procedure DsuAfterScroolHandle(DataSet_:TDataSet); virtual; abstract; // СЂРµР°Р»СЊРЅС‹Рµ РґРµР№СЃС‚РІРёСЏ РїСЂРё СЃРєСЂСѓР»РёРЅРіРµ РѕСЃРЅРѕРІРЅРѕРіРѕ РґР°С‚Р°СЃРµС‚
+      procedure FormResize(Sender_: TObject);virtual; abstract; // РґРµР№СЃС‚РІРёРµ РїСЂРё СЃРјРµРЅРµ СЂР°Р·РјРµСЂР° С„РѕСЂРјС‹
+      procedure SetPanelClassAddAction(tag_:integer); virtual; abstract; // РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РґРµР№СЃС‚РІРёСЏ РїРѕ РІС‹Р±РѕСЂСѓ РЅРѕРІРѕРіРѕ РєР»Р°СЃСЃРёС„РёРєР°С‚РѕСЂР°
     published
-      property ViewMaximized: boolean read m_view_maximized; // режим расширения панели на все окно?
-      property ViewMode: Integer read m_view_mode; //  режим отображения
-      property ClassLeftId: Integer read m_class_left_id; //  левый class_id
-      property ClassRightId: Integer read m_class_right_id; // правый class_id
+      property ViewMaximized: boolean read m_view_maximized; // СЂРµР¶РёРј СЂР°СЃС€РёСЂРµРЅРёСЏ РїР°РЅРµР»Рё РЅР° РІСЃРµ РѕРєРЅРѕ?
+      property ViewMode: Integer read m_view_mode; //  СЂРµР¶РёРј РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+      property ClassLeftId: Integer read m_class_left_id; //  Р»РµРІС‹Р№ class_id
+      property ClassRightId: Integer read m_class_right_id; // РїСЂР°РІС‹Р№ class_id
 
   end;
 
@@ -175,7 +175,7 @@ begin
   mode_view_recover
 end;
 
-procedure TfmTwoPanelControl.ResetLastScroolTag; // сброс залипания автоскрула
+procedure TfmTwoPanelControl.ResetLastScroolTag; // СЃР±СЂРѕСЃ Р·Р°Р»РёРїР°РЅРёСЏ Р°РІС‚РѕСЃРєСЂСѓР»Р°
 begin
   m_last_scrool_tag[0]:=-1000;
   m_last_scrool_tag[1]:=-1000;
@@ -241,7 +241,7 @@ procedure TfmTwoPanelControl.mode_view_recover;
 begin
   m_view_maximized:=dm.Get_Ini_Int_Par(alias+par_modemax,1)=1;
   m_view_mode:=dm.Get_Ini_Int_Par(alias+par_mode,0);
-  if m_view_mode=-1 then begin // совместимость со старой версией
+  if m_view_mode=-1 then begin // СЃРѕРІРјРµСЃС‚РёРјРѕСЃС‚СЊ СЃРѕ СЃС‚Р°СЂРѕР№ РІРµСЂСЃРёРµР№
      m_view_maximized:=true;
      m_view_mode:=0;
   end;
@@ -309,7 +309,7 @@ end;
 
 
 
-procedure TfmTwoPanelControl.GetTagPTI(tag_:integer; PTI_:TPanelTagInfo;is_fast_:boolean=false); // означить переменные tag_* в зависимости от tag_
+procedure TfmTwoPanelControl.GetTagPTI(tag_:integer; PTI_:TPanelTagInfo;is_fast_:boolean=false); // РѕР·РЅР°С‡РёС‚СЊ РїРµСЂРµРјРµРЅРЅС‹Рµ tag_* РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ tag_
 begin
   if tag_=0 then begin
       PTI_.class_id:=m_class_left_id;
@@ -341,10 +341,10 @@ begin
 
   end;
   if is_fast_ then begin
-    PTI_.class_full_name:='не означено';
-    PTI_.class_full_name_a:='не означено';
-    PTI_.class_name:='не означено';
-    PTI_.class_name_a:='не означено';
+    PTI_.class_full_name:='РЅРµ РѕР·РЅР°С‡РµРЅРѕ';
+    PTI_.class_full_name_a:='РЅРµ РѕР·РЅР°С‡РµРЅРѕ';
+    PTI_.class_name:='РЅРµ РѕР·РЅР°С‡РµРЅРѕ';
+    PTI_.class_name_a:='РЅРµ РѕР·РЅР°С‡РµРЅРѕ';
   end
   else begin
     PTI_.class_full_name:=GetClassNameFull(PTI_.class_id);
@@ -377,14 +377,14 @@ var
 begin
   PTI:=GetTagPTI(GetFocusTag);
   if (PTI.class_id<0) and (mode_=3) then begin
-    msgerror('Нельзя выбирать этот тип отображения!');
+    msgerror('РќРµР»СЊР·СЏ РІС‹Р±РёСЂР°С‚СЊ СЌС‚РѕС‚ С‚РёРї РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ!');
     exit;
   end;
 
   m_view_mode:=mode_;
   m_view_maximized:=maximized_;
 
-  if m_view_maximized then begin // максимальна одна панель на все окно
+  if m_view_maximized then begin // РјР°РєСЃРёРјР°Р»СЊРЅР° РѕРґРЅР° РїР°РЅРµР»СЊ РЅР° РІСЃРµ РѕРєРЅРѕ
     PTI:=GetTagPTI(m_view_mode);
     PTI.dbg.Visible:=true;
     PTI.dbg.Align:=alClient;
@@ -393,8 +393,8 @@ begin
     PTI.gbPanel.Align:=alClient;
   end
   else begin
-    if m_view_mode=3 then begin // двупанельная
-      PTI:=GetTagPTI(0); // без разницы какой тэг
+    if m_view_mode=3 then begin // РґРІСѓРїР°РЅРµР»СЊРЅР°СЏ
+      PTI:=GetTagPTI(0); // Р±РµР· СЂР°Р·РЅРёС†С‹ РєР°РєРѕР№ С‚СЌРі
       PTI.pnCont.Visible:=false;
       PTI.pnCont_a.Visible:=false;
 
@@ -409,15 +409,15 @@ begin
       set_panel_class_caption(0);
       set_panel_class_caption(1);
     end
-    else begin // однопанельная с просмотром содержимого
+    else begin // РѕРґРЅРѕРїР°РЅРµР»СЊРЅР°СЏ СЃ РїСЂРѕСЃРјРѕС‚СЂРѕРј СЃРѕРґРµСЂР¶РёРјРѕРіРѕ
       PTI:=GetTagPTI(m_view_mode);
       PTI.gbPanel.Visible:=true;
       PTI.gbPanel_a.Visible:=true;
-      if m_view_mode=0 then begin // слева
+      if m_view_mode=0 then begin // СЃР»РµРІР°
         PTI.gbPanel.align:=alLeft;
         PTI.gbPanel_a.align:=alClient;
       end
-      else begin // справа
+      else begin // СЃРїСЂР°РІР°
         PTI.gbPanel.align:=alClient;
         PTI.gbPanel_a.align:=alLeft;
       end;
@@ -642,7 +642,7 @@ begin
   m_last_scrool_tag[tag_]:=value_
 end;
 
-procedure TfmTwoPanelControl.DsuAfterScroll(DataSet_: TDataSet);  // действие после скрула основного dataset
+procedure TfmTwoPanelControl.DsuAfterScroll(DataSet_: TDataSet);  // РґРµР№СЃС‚РІРёРµ РїРѕСЃР»Рµ СЃРєСЂСѓР»Р° РѕСЃРЅРѕРІРЅРѕРіРѕ dataset
 var
   PTI:TPanelTagInfo;
   tag:integer;

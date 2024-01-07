@@ -92,12 +92,12 @@ begin
     fdq_:=TFdquery.Create(nil);
     fdq_.Connection:=dm.sqlc;
 
-    // тип идеи
+    // С‚РёРї РёРґРµРё
     fdq_.SQL.Text:='select si.name from note_structure_item nsi, structure_item si where note_id='+int2str(nid_)+' and nsi.structure_item_id=si.id';
     fdq_.Open(); cs_:='';
     while not fdq_.eof do begin
       if cs_='' then
-         cs_:='Тип идеи: '+fdq_['name']
+         cs_:='РўРёРї РёРґРµРё: '+fdq_['name']
       else
          cs_:=cs_+', '+fdq_['name'];
       fdq_.Next;
@@ -106,7 +106,7 @@ begin
       add_str(cs_);
     cs_:='';
 
-    // источники/проекты
+    // РёСЃС‚РѕС‡РЅРёРєРё/РїСЂРѕРµРєС‚С‹
     cpos_:=length(tc_.Text)-addstr_cnt;
     fdq_.SQL.Text:='select * from note_source where note_id='+int2str(nid_)+' and ifnull(stoc_id,0)<>'+int2str(class_id_);
     fdq_.Open();
@@ -133,7 +133,7 @@ begin
       end;
     end;
 
-    // ключевые слова
+    // РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР°
     cpos_:=length(tc_.Text)-addstr_cnt;
     fdq_.Close;
     if DM.Get_Ini_Int_Par('KW_Note_Source',0)=0 then
@@ -171,7 +171,7 @@ begin
       end;
     end;
 
-    // ссылки на заметки
+    // СЃСЃС‹Р»РєРё РЅР° Р·Р°РјРµС‚РєРё
     cpos_:=length(tc_.Text)-addstr_cnt;
     fdq_.Close;
     fdq_.SQL.clear;
@@ -224,7 +224,7 @@ begin
 
     fdq_.Free;
   except
-    // да и хер с ним!
+    // РґР° Рё С…РµСЂ СЃ РЅРёРј!
   end;
 end;
 
@@ -274,9 +274,9 @@ begin
      Len:= SendMessage(TWMNotifyFormat(Msg).From, EM_GETSELTEXT, 0, Longint(PChar(strURL)));
      SetLength(strURL, Len);
 
-     if strURL[1]='[' then // заметка
+     if strURL[1]='[' then // Р·Р°РјРµС‚РєР°
        NoteEdit(get_note_id_by_url(nu_,strURL))
-     else if strURL[1]='#' then begin // ключевое слово
+     else if strURL[1]='#' then begin // РєР»СЋС‡РµРІРѕРµ СЃР»РѕРІРѕ
         if fmKeyWordCommander<>nil then begin
            fmKeyWordCommander.Close;
         end;
@@ -284,7 +284,7 @@ begin
         fmKeyWordCommander.show;
         fmKeyWordCommander.BringToFront;
      end
-     else if strURL[1]='{' then begin // источник
+     else if strURL[1]='{' then begin // РёСЃС‚РѕС‡РЅРёРє
         stoc_index:=null2int(get_stoc_index_by_url(nu_,strURL));
         source_id:=nu_.stoc_array[stoc_index].source_id;
         PostMessage(fmmain.handle, WM_GOTO_SOURCE_PROJ, source_id, stoc_index);
