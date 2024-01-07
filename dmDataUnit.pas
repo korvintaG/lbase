@@ -9,6 +9,7 @@ uses
   FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys,
   FireDAC.Phys.SQLiteDef, FireDAC.Stan.ExprFuncs, FireDAC.VCLUI.Wait, Data.DB,
   FireDAC.Comp.Client, FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf,
+  extend_data,
   FireDAC.DApt, FireDAC.Comp.DataSet;
 
 const
@@ -45,7 +46,7 @@ type
     procedure source_stack_add_level(src_id_:longint;stoc_id_:integer);
     procedure source_classification_add_level(is_mine_:longint;sc_id_:integer);
 
-    // блок фильтров
+    // Р±Р»РѕРє С„РёР»СЊС‚СЂРѕРІ
     procedure fill_interest_keyword_expand;
     procedure kw_add_all_sublevel(kw_id_:longint);
     procedure kw_del_all_sublevel(kw_id_:longint);
@@ -69,6 +70,8 @@ type
     sql_func_stoc_fullname: TFDSQLiteFunction;
     sql_func_keyword_classname: TFDSQLiteFunction;
     sql_func_class_id_sort_val: TFDSQLiteFunction;
+    function setdata(bdname_:string; open_mode:TDBMode):boolean;
+
     procedure CreateFunc;
     function get_source_fullname_by_id(id_:longint;show_is_mine_:integer):string;
     function get_root_toc(rid_:integer):string;
@@ -82,13 +85,13 @@ type
     procedure Set_Ini_Str_Par(par_name_:string;value_:string);
     procedure add_new_kw_name(name_:string;class_kw_id_:longint; var kw_id, kw_name_id:longint);
     function get_kw_by_kwn(kwn_id_:longint):longint;
-    // взять основной kw_name_id по kw_id
+    // РІР·СЏС‚СЊ РѕСЃРЅРѕРІРЅРѕР№ kw_name_id РїРѕ kw_id
     function get_main_kw_name_id(kw_id_:longint):longint;
     function get_source_full_root(class_id_:longint):string;
     function get_kw_full_root(class_id_:longint):string;
     function get_interest_full_root(class_id_:longint):string;
 
-    function calc_keyword_in_sublevel(kw_class_id_:longint;type_:integer=0):integer; //Type_=0 - все, =1 - только ключевые слова, =3 - только папки
+    function calc_keyword_in_sublevel(kw_class_id_:longint;type_:integer=0):integer; //Type_=0 - РІСЃРµ, =1 - С‚РѕР»СЊРєРѕ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР°, =3 - С‚РѕР»СЊРєРѕ РїР°РїРєРё
     procedure recreate_source_stoc(src_id_:longint;tmp_data_set:TDataSet);
     procedure recreate_source_classification(is_mine_:integer);
     function get_source_class_full(class_id_:longint):string;
@@ -115,13 +118,13 @@ type
     procedure add_new_ddl_object;
     procedure RefillKWNExpanded;
 
-    procedure recalc_keyword(kw_id_:longint); // пересчет ключевого слова (name_main, name_w_synonym)
+    procedure recalc_keyword(kw_id_:longint); // РїРµСЂРµСЃС‡РµС‚ РєР»СЋС‡РµРІРѕРіРѕ СЃР»РѕРІР° (name_main, name_w_synonym)
 
-    procedure recalc_class_name(from_kw_id_:longint); // в рекурсии считает названия классификаторного префикса/суффикса
+    procedure recalc_class_name(from_kw_id_:longint); // РІ СЂРµРєСѓСЂСЃРёРё СЃС‡РёС‚Р°РµС‚ РЅР°Р·РІР°РЅРёСЏ РєР»Р°СЃСЃРёС„РёРєР°С‚РѕСЂРЅРѕРіРѕ РїСЂРµС„РёРєСЃР°/СЃСѓС„С„РёРєСЃР°
 
-    function get_max_stoc_order(sid_,stid_:longint):longint; // возвращает максимальное значение п/п для оглавления источника
+    function get_max_stoc_order(sid_,stid_:longint):longint; // РІРѕР·РІСЂР°С‰Р°РµС‚ РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ Рї/Рї РґР»СЏ РѕРіР»Р°РІР»РµРЅРёСЏ РёСЃС‚РѕС‡РЅРёРєР°
 
-    function keyword_delete(id_:longint):boolean; // удаление ключевого слова с проверками
+    function keyword_delete(id_:longint):boolean; // СѓРґР°Р»РµРЅРёРµ РєР»СЋС‡РµРІРѕРіРѕ СЃР»РѕРІР° СЃ РїСЂРѕРІРµСЂРєР°РјРё
 
     function to_filter:boolean;
 
@@ -143,7 +146,7 @@ implementation
 {$R *.dfm}
 
 uses
-  extend_data, extend_dialog, LCB_unit, fmSourceEditUnit, System.JSON, extend_diskutil;
+  extend_dialog, LCB_unit, fmSourceEditUnit, System.JSON, extend_diskutil, data_service;
 
 
 procedure TDM.ge(Sender: TObject);
@@ -282,7 +285,7 @@ begin
   else begin
     if fdq['is_mine']=1  then begin
       if (show_is_mine_=1) then
-        Result := fdq['name']+' - [Мой проект]'
+        Result := fdq['name']+' - [РњРѕР№ РїСЂРѕРµРєС‚]'
       else
         Result := fdq['name']
     end
@@ -322,16 +325,16 @@ begin
   fdq.Connection:=dm.sqlc;
   fdq.SQL.Text:='select s.is_mine, source_type_id from note_source ns, source s where ns.source_id=s.id and note_id='+inttostr(AInputs[0].AsInteger);
   fdq.Open();
-  if fdq.RecordCount=0 then // пусто
+  if fdq.RecordCount=0 then // РїСѓСЃС‚Рѕ
     AOutput.AsInteger:=0
   else begin
-    if fdq.RecordCount=1 then begin // один источник или проект
+    if fdq.RecordCount=1 then begin // РѕРґРёРЅ РёСЃС‚РѕС‡РЅРёРє РёР»Рё РїСЂРѕРµРєС‚
       if fdq['is_mine']=1 then
         AOutput.AsInteger:=1000
       else
         AOutput.AsInteger:=fdq['source_type_id'];
     end
-    else begin // 2 и более
+    else begin // 2 Рё Р±РѕР»РµРµ
         AOutput.AsInteger:=100000
     end;
   end;
@@ -354,13 +357,19 @@ begin
   fname:=DM.Get_Ini_Str_Par('FileStoreDir')+'\TelegramFile\'+inttostr(AInputs[0].AsInteger);
   if fileexists (fname) then begin
     fsize:=BFileSize(fname);
-    // Определяем размер бинарных данных
-    fs:=Tfilestream.Create(fname ,fmShareDenyWrite);
-    SetLength(BinaryData, fs.Size);
+    if fsize<1000000 then begin
+      // РћРїСЂРµРґРµР»СЏРµРј СЂР°Р·РјРµСЂ Р±РёРЅР°СЂРЅС‹С… РґР°РЅРЅС‹С…
+      fs:=Tfilestream.Create(fname ,fmShareDenyWrite);
+      SetLength(BinaryData, fs.Size);
 
-    fs.ReadBuffer(BinaryData[0], fs.Size);
-    AOutput.SetData(BinaryData,fs.Size, etBlob);
-    fs.free;
+      fs.ReadBuffer(BinaryData[0], fs.Size);
+      AOutput.SetData(BinaryData,fs.Size, etBlob);
+      fs.free;
+    end
+    else begin
+      SetLength(BinaryData, 0);
+      AOutput.SetData(BinaryData,0, etBlob);
+    end;
     //AsString := get_source_fullname_by_id(AInputs[0].AsInteger,AInputs[1].AsInteger)
   end
 end;
@@ -486,7 +495,7 @@ begin
     Value:=name_;
   end;
   fdq.Open();
-  if fdq.RecordCount>0 then begin // если уже есть такое, то вернули существующее
+  if fdq.RecordCount>0 then begin // РµСЃР»Рё СѓР¶Рµ РµСЃС‚СЊ С‚Р°РєРѕРµ, С‚Рѕ РІРµСЂРЅСѓР»Рё СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРµ
     kw_id:=fdq['id'];
     kw_name_id:=fdq['name_id'];
     exit;
@@ -566,7 +575,7 @@ begin
 end;
 
 
-// взять основной kw_name_id по kw_id
+// РІР·СЏС‚СЊ РѕСЃРЅРѕРІРЅРѕР№ kw_name_id РїРѕ kw_id
 function TDM.get_main_kw_name_id(kw_id_:longint):longint;
 var
   mmo_,kwn_id_:longint;
@@ -609,7 +618,7 @@ begin
 end;
 
 
-function TDM.calc_keyword_in_sublevel(kw_class_id_:longint;type_:integer=0):integer; //Type_=0 - все, =1 - только ключевые слова, =3 - только папки
+function TDM.calc_keyword_in_sublevel(kw_class_id_:longint;type_:integer=0):integer; //Type_=0 - РІСЃРµ, =1 - С‚РѕР»СЊРєРѕ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР°, =3 - С‚РѕР»СЊРєРѕ РїР°РїРєРё
 var
   s_:string;
   res_:integer;
@@ -766,13 +775,13 @@ var
 begin
     cnt:=sqlc.ExecSQLScalar('select count(*) from source_url where url=:UUU and source_id<>:SID',[url_,excl_source_id_]);
     if cnt>0 then begin
-      msgerror('Введенный Вами URL источника уже закреплен за другим источником!');
+      msgerror('Р’РІРµРґРµРЅРЅС‹Р№ Р’Р°РјРё URL РёСЃС‚РѕС‡РЅРёРєР° СѓР¶Рµ Р·Р°РєСЂРµРїР»РµРЅ Р·Р° РґСЂСѓРіРёРј РёСЃС‚РѕС‡РЅРёРєРѕРј!');
       Result:=false;
       exit;
     end;
     cnt:=sqlc.ExecSQLScalar('select count(*) from note_url where url=:UUU and note_id<>:NID',[url_,excl_note_id_]);
     if cnt>0 then begin
-      msgerror('Введенный Вами URL источника уже закреплен за заметкой!');
+      msgerror('Р’РІРµРґРµРЅРЅС‹Р№ Р’Р°РјРё URL РёСЃС‚РѕС‡РЅРёРєР° СѓР¶Рµ Р·Р°РєСЂРµРїР»РµРЅ Р·Р° Р·Р°РјРµС‚РєРѕР№!');
       Result:=false;
       exit
     end;
@@ -799,17 +808,17 @@ begin
         id_next_:=ds_['id']
       else
         id_next_:=0;
-      ds_.Next; // чтобы вернуть где было
+      ds_.Next; // С‡С‚РѕР±С‹ РІРµСЂРЅСѓС‚СЊ РіРґРµ Р±С‹Р»Рѕ
    end;
   end
   else begin
-   //ds_.MoveBy(-1); // возвращаем
+   //ds_.MoveBy(-1); // РІРѕР·РІСЂР°С‰Р°РµРј
    //ds_.Next;
    if cur_dir_=ds_['is_dir'] then
      id_next_:=ds_['id']
    else
      id_next_:=0;
-   ds_.MoveBy(-1); // чтобы вернуть как было
+   ds_.MoveBy(-1); // С‡С‚РѕР±С‹ РІРµСЂРЅСѓС‚СЊ РєР°Рє Р±С‹Р»Рѕ
   end;
   Result:=id_next_;
 end;
@@ -867,9 +876,9 @@ end;
 function TDM.get_work_status(status_:integer):string;
 begin
   case status_ of
-  0:result:='Не начато';
-  1:result:='В процессе';
-  3:result:='Завершен';
+  0:result:='РќРµ РЅР°С‡Р°С‚Рѕ';
+  1:result:='Р’ РїСЂРѕС†РµСЃСЃРµ';
+  3:result:='Р—Р°РІРµСЂС€РµРЅ';
   end;
 end;
 
@@ -880,26 +889,26 @@ var
 begin
   tc_.clear;
   tc_.Add('');
-  tc_.Add('Папка: '+get_source_full_root(class_id_));
+  tc_.Add('РџР°РїРєР°: '+get_source_full_root(class_id_));
   cnt_:=sqlc.ExecSQLScalar('select count(*) from source_classification where source_classification_id=:SID',[class_id_]);
   //if cnt_>0 then begin
     tc_.add('');
-    tc_.Add('Число подкаталогов 1-го уровня вложенности: '+inttostr(cnt_));
+    tc_.Add('Р§РёСЃР»Рѕ РїРѕРґРєР°С‚Р°Р»РѕРіРѕРІ 1-РіРѕ СѓСЂРѕРІРЅСЏ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё: '+inttostr(cnt_));
   //end;
   cnt_:=sqlc.ExecSQLScalar('select count(*) from source where source_classification_id=:SID',[class_id_]);
   //if cnt_>0 then begin
     tc_.add('');
-    tc_.Add('Число '+source_proj[is_mine,1]+' 1-го уровня вложенности: '+inttostr(cnt_));
+    tc_.Add('Р§РёСЃР»Рѕ '+source_proj[is_mine,1]+' 1-РіРѕ СѓСЂРѕРІРЅСЏ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё: '+inttostr(cnt_));
   //end;
   cnt_:=dm.calc_src_class_subdirs(class_id_);
   //if cnt_>0 then begin
     tc_.add('');
-    tc_.Add('Число подкаталогов всего: '+inttostr(cnt_));
+    tc_.Add('Р§РёСЃР»Рѕ РїРѕРґРєР°С‚Р°Р»РѕРіРѕРІ РІСЃРµРіРѕ: '+inttostr(cnt_));
   //end;
   cnt_:=dm.calc_src_class_subsource(class_id_);
   //if cnt_>0 then begin
     tc_.add('');
-    tc_.Add('Число '+source_proj[is_mine,1]+' всего: '+inttostr(cnt_));
+    tc_.Add('Р§РёСЃР»Рѕ '+source_proj[is_mine,1]+' РІСЃРµРіРѕ: '+inttostr(cnt_));
   //end;
 end;
 
@@ -1067,7 +1076,7 @@ begin
      fdq_.Open();
      if fdq_.RecordCount>0 then begin
        if not fdq_.Locate('name',field_name_,[loCaseInsensitive]) then begin
-         lcb.log('Нет поля '+field_name_+' в таблице '+table_name_+', добавляем SQL-запросом!');
+         lcb.log('РќРµС‚ РїРѕР»СЏ '+field_name_+' РІ С‚Р°Р±Р»РёС†Рµ '+table_name_+', РґРѕР±Р°РІР»СЏРµРј SQL-Р·Р°РїСЂРѕСЃРѕРј!');
          fdq_.SQL.Text:='ALTER TABLE '+table_name_+' ADD COLUMN '+field_name_+' '+field_type_+';';
          lcb.log(fdq_.SQL.Text);
          fdq_.ExecSQL;
@@ -1079,7 +1088,7 @@ begin
   JsonArray.Free;
 end;
 
-// пересчет ключевого слова (name_main, name_w_synonym)
+// РїРµСЂРµСЃС‡РµС‚ РєР»СЋС‡РµРІРѕРіРѕ СЃР»РѕРІР° (name_main, name_w_synonym)
 procedure TDM.recalc_keyword(kw_id_:longint);
 var
   new_main_:string;
@@ -1090,7 +1099,7 @@ begin
   fdq_:=TFdquery.Create(nil);
   fdq_.Connection:=sqlc;
   fdq_.ResourceOptions.ParamCreate := False;
-  // правим name_main
+  // РїСЂР°РІРёРј name_main
   RootKWName:=sqlc.ExecSQLScalar('select name_main from keyword where id=:KID',[kw_id_]);
   fdq_.sql.text:='select * from keyword_name where keyword_id='+inttostr(kw_id_)+' order by ifnull(order_,0),id';
   fdq_.Open;
@@ -1125,7 +1134,7 @@ begin
 end;
 
 
-// в рекурсии считает названия классификаторного префикса/суффикса
+// РІ СЂРµРєСѓСЂСЃРёРё СЃС‡РёС‚Р°РµС‚ РЅР°Р·РІР°РЅРёСЏ РєР»Р°СЃСЃРёС„РёРєР°С‚РѕСЂРЅРѕРіРѕ РїСЂРµС„РёРєСЃР°/СЃСѓС„С„РёРєСЃР°
 procedure tdm.recalc_class_name(from_kw_id_:longint);
 var
   fdq_, fdqu_:tFdquery;
@@ -1147,7 +1156,7 @@ begin
 end;
 
 
-function TDM.get_max_stoc_order(sid_,stid_:longint):longint; // возвращает максимальное значение п/п для оглавления источника
+function TDM.get_max_stoc_order(sid_,stid_:longint):longint; // РІРѕР·РІСЂР°С‰Р°РµС‚ РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ Рї/Рї РґР»СЏ РѕРіР»Р°РІР»РµРЅРёСЏ РёСЃС‚РѕС‡РЅРёРєР°
 var
   maxs, maxn:longint;
 begin
@@ -1194,10 +1203,10 @@ begin
      //lcb.log('cnt='+type_+inttostr(cnt_));
      if sqlc.ExecSQLScalar('select count(*) from sqlite_master WHERE type = :TT and name=:NN',[type_,name_])=0 then begin
        try
-         lcb.log('Нет '+type_+' '+name_+', добавляем SQL-запросом '+value_);
+         lcb.log('РќРµС‚ '+type_+' '+name_+', РґРѕР±Р°РІР»СЏРµРј SQL-Р·Р°РїСЂРѕСЃРѕРј '+value_);
          sqlc.ExecSQL(value_);
        except
-         msgerror('Ошибка обновления структуры - не проходит SQL-запрос ['+value_+']! Обратитесь к программисту!');
+         msgerror('РћС€РёР±РєР° РѕР±РЅРѕРІР»РµРЅРёСЏ СЃС‚СЂСѓРєС‚СѓСЂС‹ - РЅРµ РїСЂРѕС…РѕРґРёС‚ SQL-Р·Р°РїСЂРѕСЃ ['+value_+']! РћР±СЂР°С‚РёС‚РµСЃСЊ Рє РїСЂРѕРіСЂР°РјРјРёСЃС‚Сѓ!');
        end;
      end;
 
@@ -1217,7 +1226,7 @@ begin
      cnt_:=sqlc.ExecSQLScalar('select count(*) from keyword where class_keyword_id=:KID',[id_]);
      if cnt_>0 then begin
        mname_:=sqlc.ExecSQLScalar('select min(name) from keyword where class_keyword_id=:KID',[id_]);
-       msgerror('Нельзя удалять тэги, которые являются ключевыми. Например, для тэга ['+mname_+']');
+       msgerror('РќРµР»СЊР·СЏ СѓРґР°Р»СЏС‚СЊ С‚СЌРіРё, РєРѕС‚РѕСЂС‹Рµ СЏРІР»СЏСЋС‚СЃСЏ РєР»СЋС‡РµРІС‹РјРё. РќР°РїСЂРёРјРµСЂ, РґР»СЏ С‚СЌРіР° ['+mname_+']');
        result:=false;
      end
      else begin
@@ -1321,7 +1330,7 @@ begin
   // kw_id, mark_st
   if sqlc.ExecSQLScalar('select count(*) from filter_keyword where keyword_id=:KW and filter_id=:FID',[AInputs[0].AsInteger,AInputs[1].AsInteger])=1 then
     AOutput.AsInteger := 1
-  else begin // не помечен
+  else begin // РЅРµ РїРѕРјРµС‡РµРЅ
     AOutput.AsInteger := get_marked_status(AInputs[0].AsInteger,AInputs[1].AsInteger);
   end;
 end;
@@ -1363,7 +1372,7 @@ begin
   // kw_id, mark_st
   if sqlc.ExecSQLScalar('select count(*) from filter_interest where interest_id=:KW and filter_id=:FID',[AInputs[0].AsInteger,AInputs[1].AsInteger])=1 then
     AOutput.AsInteger := 1
-  else begin // не помечен
+  else begin // РЅРµ РїРѕРјРµС‡РµРЅ
     AOutput.AsInteger := get_marked_status(AInputs[0].AsInteger,AInputs[1].AsInteger);
   end;
 end;
@@ -1381,7 +1390,7 @@ var
     DM.sqlc.ExecSQL(ddd);
   end;
 
-  // добавляем выходные ключевые слова по источнику
+  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° РїРѕ РёСЃС‚РѕС‡РЅРёРєСѓ
   procedure add_kw_out_by_source;
   begin
       DM.sqlc.ExecSQL('insert into tmp_filter_keyword_out  (keyword_id) '+
@@ -1391,7 +1400,7 @@ var
                           ' and not exists (select * from tmp_filter_keyword_out where keyword_id=nk.keyword_id ) ');
   end;
 
-  // добавляем выходные интересы по источнику
+  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РёРЅС‚РµСЂРµСЃС‹ РїРѕ РёСЃС‚РѕС‡РЅРёРєСѓ
   procedure add_interest_out_by_source;
   begin
       DM.sqlc.ExecSQL('insert into tmp_filter_interest_out  (interest_id) '+
@@ -1401,7 +1410,7 @@ var
                           ' and not exists (select * from tmp_filter_interest_out where interest_id=ike.interest_id ) ');
   end;
 
-  // добавляем выходные интересы по ключевым словам
+  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РёРЅС‚РµСЂРµСЃС‹ РїРѕ РєР»СЋС‡РµРІС‹Рј СЃР»РѕРІР°Рј
   procedure add_interest_out_by_kw;
   begin
       DM.sqlc.ExecSQL('insert into tmp_filter_interest_out  (interest_id) '+
@@ -1411,7 +1420,7 @@ var
                           ' and not exists (select * from tmp_filter_interest_out where interest_id=ike.interest_id ) ');
   end;
 
-  // добавляем выходные ключевые слова по проекту
+  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° РїРѕ РїСЂРѕРµРєС‚Сѓ
   procedure add_kw_out_by_project;
   begin
       DM.sqlc.ExecSQL('insert into tmp_filter_keyword_out  (keyword_id) '+
@@ -1421,7 +1430,7 @@ var
                           ' and not exists (select * from tmp_filter_keyword_out where keyword_id=nk.keyword_id ) ');
   end;
 
-  // добавляем выходные ключевые слова по автору
+  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° РїРѕ Р°РІС‚РѕСЂСѓ
   procedure add_kw_out_by_author;
   begin
       DM.sqlc.ExecSQL('insert into tmp_filter_keyword_out  (keyword_id) '+
@@ -1430,7 +1439,7 @@ var
                           ' and not exists (select * from tmp_filter_keyword_out where keyword_id=nk.keyword_id ) ');
   end;
 
-  // добавляем выходные интересы по автору
+  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РёРЅС‚РµСЂРµСЃС‹ РїРѕ Р°РІС‚РѕСЂСѓ
   procedure add_interest_out_by_author;
   begin
       DM.sqlc.ExecSQL('insert into tmp_filter_interest_out  (interest_id) '+
@@ -1441,7 +1450,7 @@ var
 
   end;
 
-  // формируем ключевые слова по базе интересов
+  // С„РѕСЂРјРёСЂСѓРµРј РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° РїРѕ Р±Р°Р·Рµ РёРЅС‚РµСЂРµСЃРѕРІ
   procedure add_kw_out_by_interest;
   var
     fdq:TFdquery;
@@ -1458,7 +1467,7 @@ var
       fdq.Free;
   end;
 
-  // добавляем ключевые слова к выходным ключевым словам
+  // РґРѕР±Р°РІР»СЏРµРј РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° Рє РІС‹С…РѕРґРЅС‹Рј РєР»СЋС‡РµРІС‹Рј СЃР»РѕРІР°Рј
   procedure add_kw_out_by_kw;
   var
     ch_cnt_:integer;
@@ -1466,7 +1475,7 @@ var
     DM.sqlc.ExecSQL('insert into tmp_filter_keyword_out(keyword_id) select keyword_id from tmp_filter_keyword '+
       ' where not exists '+
       '(select * from tmp_filter_keyword_out where tmp_filter_keyword_out.keyword_id=tmp_filter_keyword.keyword_id)');
-    // формируем иерархию ключевых слов с папками
+    // С„РѕСЂРјРёСЂСѓРµРј РёРµСЂР°СЂС…РёСЋ РєР»СЋС‡РµРІС‹С… СЃР»РѕРІ СЃ РїР°РїРєР°РјРё
     repeat
       DM.sqlc.ExecSQL('insert into tmp_filter_keyword_out(keyword_id,type_) '+
                           ' select distinct keyword.class_keyword_id,1 '+
@@ -1479,7 +1488,7 @@ var
     until ch_cnt_=0;
   end;
 
-  // добавляем интересы к выходным интересам
+  // РґРѕР±Р°РІР»СЏРµРј РёРЅС‚РµСЂРµСЃС‹ Рє РІС‹С…РѕРґРЅС‹Рј РёРЅС‚РµСЂРµСЃР°Рј
   procedure add_interest_out_by_interest;
   var
     ch_cnt_:integer;
@@ -1487,7 +1496,7 @@ var
     DM.sqlc.ExecSQL('insert into tmp_filter_interest_out(interest_id) select interest_id from tmp_filter_interest '+
       ' where not exists '+
       '(select * from tmp_filter_interest_out where tmp_filter_interest_out.interest_id=tmp_filter_interest.interest_id)');
-    // формируем иерархию интересов с папками
+    // С„РѕСЂРјРёСЂСѓРµРј РёРµСЂР°СЂС…РёСЋ РёРЅС‚РµСЂРµСЃРѕРІ СЃ РїР°РїРєР°РјРё
     repeat
       DM.sqlc.ExecSQL('insert into tmp_filter_interest_out(interest_id,type_) '+
                           ' select distinct interest.class_interest_id,1 '+
@@ -1510,36 +1519,36 @@ var
   procedure add_kw_int_out;
   begin
     if DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_author')>0 then begin
-      // есть фильтр по авторам
-      add_kw_out_by_author; // добавляем выходные ключевые слова по автору
-      add_interest_out_by_author;  // добавляем выходные интересы по автору
+      // РµСЃС‚СЊ С„РёР»СЊС‚СЂ РїРѕ Р°РІС‚РѕСЂР°Рј
+      add_kw_out_by_author; // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° РїРѕ Р°РІС‚РѕСЂСѓ
+      add_interest_out_by_author;  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РёРЅС‚РµСЂРµСЃС‹ РїРѕ Р°РІС‚РѕСЂСѓ
     end;
     if DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_source')>0 then begin
-      // есть фильтр по источникам
-      add_kw_out_by_source;  // добавляем выходные ключевые слова по источнику
-      add_interest_out_by_source;  // добавляем выходные интересы по источнику
+      // РµСЃС‚СЊ С„РёР»СЊС‚СЂ РїРѕ РёСЃС‚РѕС‡РЅРёРєР°Рј
+      add_kw_out_by_source;  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° РїРѕ РёСЃС‚РѕС‡РЅРёРєСѓ
+      add_interest_out_by_source;  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РёРЅС‚РµСЂРµСЃС‹ РїРѕ РёСЃС‚РѕС‡РЅРёРєСѓ
     end;
     if DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_keyword')>0 then begin
-      // есть фильтр по ключевым словам
-      add_interest_out_by_kw; // добавляем выходные интересы по ключевым словам
+      // РµСЃС‚СЊ С„РёР»СЊС‚СЂ РїРѕ РєР»СЋС‡РµРІС‹Рј СЃР»РѕРІР°Рј
+      add_interest_out_by_kw; // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РёРЅС‚РµСЂРµСЃС‹ РїРѕ РєР»СЋС‡РµРІС‹Рј СЃР»РѕРІР°Рј
     end;
     if DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_interest')>0 then begin
-      // есть фильтр по интересам
-      add_kw_out_by_interest; // формируем ключевые слова по базе интересов
+      // РµСЃС‚СЊ С„РёР»СЊС‚СЂ РїРѕ РёРЅС‚РµСЂРµСЃР°Рј
+      add_kw_out_by_interest; // С„РѕСЂРјРёСЂСѓРµРј РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° РїРѕ Р±Р°Р·Рµ РёРЅС‚РµСЂРµСЃРѕРІ
     end;
     if DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_project')>0 then begin
-      // есть фильтр по проектам
-      add_kw_out_by_project;  // добавляем выходные ключевые слова по проекту
-      //add_interest_out_by_project;  // добавляем выходные ключевые слова по проекту
+      // РµСЃС‚СЊ С„РёР»СЊС‚СЂ РїРѕ РїСЂРѕРµРєС‚Р°Рј
+      add_kw_out_by_project;  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° РїРѕ РїСЂРѕРµРєС‚Сѓ
+      //add_interest_out_by_project;  // РґРѕР±Р°РІР»СЏРµРј РІС‹С…РѕРґРЅС‹Рµ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° РїРѕ РїСЂРѕРµРєС‚Сѓ
     end;
 
     if (DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_keyword')>0) or
        (DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_keyword_out')>0)then
-          add_kw_out_by_kw; // добавляем ключевые слова к выходным ключевым словам
+          add_kw_out_by_kw; // РґРѕР±Р°РІР»СЏРµРј РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° Рє РІС‹С…РѕРґРЅС‹Рј РєР»СЋС‡РµРІС‹Рј СЃР»РѕРІР°Рј
 
     if (DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_interest')>0) or
        (DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_interest_out')>0)then
-          add_interest_out_by_interest;; // добавляем интересы к выходным интересам
+          add_interest_out_by_interest;; // РґРѕР±Р°РІР»СЏРµРј РёРЅС‚РµСЂРµСЃС‹ Рє РІС‹С…РѕРґРЅС‹Рј РёРЅС‚РµСЂРµСЃР°Рј
 
   end;
 
@@ -1572,8 +1581,8 @@ begin
 
     //fmmain.Applied_Filters_Name:='['+fmmain.Applied_Filters_Name+']';
 
-    add_kw_int_out; // добавить все связанное с выходными ключевыми словами и выходными интересами
-    gen_tmp_source_and_project; // формируем единый файл фильтров источники+проект
+    add_kw_int_out; // РґРѕР±Р°РІРёС‚СЊ РІСЃРµ СЃРІСЏР·Р°РЅРЅРѕРµ СЃ РІС‹С…РѕРґРЅС‹РјРё РєР»СЋС‡РµРІС‹РјРё СЃР»РѕРІР°РјРё Рё РІС‹С…РѕРґРЅС‹РјРё РёРЅС‚РµСЂРµСЃР°РјРё
+    gen_tmp_source_and_project; // С„РѕСЂРјРёСЂСѓРµРј РµРґРёРЅС‹Р№ С„Р°Р№Р» С„РёР»СЊС‚СЂРѕРІ РёСЃС‚РѕС‡РЅРёРєРё+РїСЂРѕРµРєС‚
 
     if (DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_keyword')=0)
         and
@@ -1585,7 +1594,7 @@ begin
         and
         (DM.sqlc.ExecSQLScalar('select count(*) from tmp_filter_author')=0)
      then begin
-       msgerror('Пустые фильтры - нечего применять!');
+       msgerror('РџСѓСЃС‚С‹Рµ С„РёР»СЊС‚СЂС‹ - РЅРµС‡РµРіРѕ РїСЂРёРјРµРЅСЏС‚СЊ!');
        result:=false;
        exit;
      end;
@@ -1594,7 +1603,7 @@ begin
 
 end;
 
-// ДОБАВЛЯЕМ все-все ключевые слова с подфайлами по интересу
+// Р”РћР‘РђР’Р›РЇР•Рњ РІСЃРµ-РІСЃРµ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° СЃ РїРѕРґС„Р°Р№Р»Р°РјРё РїРѕ РёРЅС‚РµСЂРµСЃСѓ
 procedure TDM.fill_interest_keyword_expand;
   procedure fill_kw_dir(iid_,kwid_:longint);
   var
@@ -1630,7 +1639,7 @@ procedure TDM.fill_interest_keyword_expand;
       fdqk.Connection:=sqlc;
       fdqk.SQL.Text:='select * from interest_keyword where interest_id='+inttostr(fdq['id']);
       fdqk.Open();
-      // по ключевым словам одного интереса
+      // РїРѕ РєР»СЋС‡РµРІС‹Рј СЃР»РѕРІР°Рј РѕРґРЅРѕРіРѕ РёРЅС‚РµСЂРµСЃР°
       while not fdqk.eof do begin
         sqlc.ExecSQL('insert into interest_keyword_expand (interest_id, keyword_id) '+
                     ' select :II, :KK where not exists '+
@@ -1689,7 +1698,7 @@ begin
 end;
 
 
-// добавляет все ключевые слова с подфайлами
+// РґРѕР±Р°РІР»СЏРµС‚ РІСЃРµ РєР»СЋС‡РµРІС‹Рµ СЃР»РѕРІР° СЃ РїРѕРґС„Р°Р№Р»Р°РјРё
 procedure TDM.add_filter_keyword(f_id_,kw_id_:longint;use_type_:integer);
 var
   fdq:TFdquery;
@@ -1831,6 +1840,96 @@ begin
   fdq_.Free;
   JsonArray.Free;
 
+end;
+
+
+function TDM.setdata(bdname_:string; open_mode:TDBMode):boolean;
+var
+  sqls_, dir:string;
+  fdq:TFdquery;
+begin
+  dm.sqlc.Params.Database:=bdname_;
+  if open_mode=dbInsert then begin
+    dm.sqlc.open;
+    sqls_:= extend_diskutil.GetStrFromAppResource('create_db_script');
+    dm.sqlc.ExecSQL(sqls_);
+
+    sqls_:= extend_diskutil.GetStrFromAppResource('fill_new_db');
+    dm.sqlc.ExecSQL(sqls_,['РљРЅРёРіР°',
+                        'Р’РёРґРµРѕ-СЂРѕР»РёРє',
+                        'WEB-СЃС‚СЂР°РЅРёС†Р°, СЃР°Р№С‚',
+                        'РџСѓР±Р»РёРєР°С†РёСЏ',
+                        'Telegram РїРѕСЃС‚',
+                        'РџРёСЃСЊРјРѕ',
+                        'РЎС‚Р°С‚СЊСЏ',
+                        'РЎР»РµРґСѓРµС‚ Р·Р°',
+                        'РџСЂРµРґС€РµСЃС‚РІСѓРµС‚']);
+
+    {Stream := TResourceStream.Create(HInstance, 'fill_new_db', RT_RCDATA);
+    List.LoadFromStream(Stream);
+    sqls_:= List.text;
+    Stream.Free;
+    sqlc.ExecSQL(sqls_,[ML.GetCommonMessage('SQLiteBook'),
+                        ML.GetCommonMessage('SQLiteVideo'),
+                        ML.GetCommonMessage('SQLiteWWW'),
+                        ML.GetCommonMessage('SQLitePublication'),
+                        ML.GetCommonMessage('SQLiteTelegram'),
+                        ML.GetCommonMessage('SQLiteEmail'),
+                        ML.GetCommonMessage('SQLiteArticle'),
+                        ML.GetCommonMessage('SQLiteRouteAfter'),
+                        ML.GetCommonMessage('SQLiteRouteBefore')
+                          ]);}
+  end
+  else begin
+    try
+      dm.sqlc.Connected:=TRUE;
+      dm.add_new_ddl_object;
+      dm.struct_add_new_fields;
+      dm.add_new_service_rows;
+      //check_db_correct;
+      if DM.Get_Ini_Int_Par('FileStorePlace')=1 then begin
+        fdq:=tFdquery.Create(nil);
+        fdq.Connection:=dm.sqlc;
+        fdq.SQL.Text:='select id from telegram_fast_note where date_time_create<date("now","-'+inttostr(dm.Get_Ini_Int_Par('TelegramNoteSaveDay',6*30))+' days")  and status=1 and file is not null';
+        fdq.Open();
+        dir:=DM.Get_Ini_Str_Par('FileStoreDir')+'\TelegramFile\';
+        while not fdq.eof do begin
+          if fileexists(dir+inttostr(fdq['id'])) then
+            deletefile(dir+inttostr(fdq['id']));
+
+          fdq.Next;
+        end;
+        fdq.Close;
+        fdq.Free;
+      end;
+
+      dm.sqlc.ExecSQL('delete from telegram_fast_note where date_time_create<date("now","-'+inttostr(dm.Get_Ini_Int_Par('TelegramNoteSaveDay',6*30))+' days")  and status=1');
+      dm.sqlc.ExecSQL('update source_keyword set keyword_name_id = (select keyword_name.id from keyword_name, keyword where keyword.id=source_keyword.keyword_id and keyword_name.name=keyword.name_main and keyword.id=keyword_name.keyword_id) where keyword_name_id is null');
+      dm.sqlc.ExecSQL('update source set date_time_update=date_time_create where date_time_update is null');
+      CreateIfNeedDirStore;
+
+      dm.RefillKWNExpanded;
+
+      dm.sqlc.ExecSQL('update keyword '+
+                      'set '+
+                      '  all_use_count=(select count(*) from note_keyword where keyword_id=keyword.id)+'+
+                      '                (select count(*) from source_keyword where keyword_id=keyword.id)+'+
+                      '        				 (select count(*) from task_keyword where keyword_id=keyword.id)+'+
+                      '       				 (select count(*) from STOC_keyword where keyword_id=keyword.id)+'+
+                      '        				 (select count(*) from note_expanded_keyword where keyword_id=keyword.id)');
+
+
+
+      //sqlc.ExecSQL('VACUUM;');
+    except
+      msgerror('РћС€РёР±РєР° - Р±Р°Р·Р° СѓР¶Рµ РѕС‚РєСЂС‹С‚Р°!');
+      setdata:=false;
+      exit
+    end;
+  end;
+
+
+  setdata:=true;
 end;
 
 

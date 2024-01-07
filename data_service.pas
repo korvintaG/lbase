@@ -8,8 +8,8 @@ uses
   function getKeyword(var id_, name_id_:longint;AOwner: TComponent; Caption_,MsgSelect_,btSelect_,SQLText_:string;AllowInsert_:boolean=false;MsgInsert_:string='';btInsert_:string=''):boolean;
   procedure NoteEdit(note_id_:longint);
   function GetSTOC(var source_id_,stoc_id_:longint; is_mine_:integer):boolean;
-  function MoveFilesToDir:boolean; // перенести все файлы с базы во внешний каталог
-  procedure CreateIfNeedDirStore; // создать если нужнот каталоги для хранения файлов
+  function MoveFilesToDir:boolean; // РїРµСЂРµРЅРµСЃС‚Рё РІСЃРµ С„Р°Р№Р»С‹ СЃ Р±Р°Р·С‹ РІРѕ РІРЅРµС€РЅРёР№ РєР°С‚Р°Р»РѕРі
+  procedure CreateIfNeedDirStore; // СЃРѕР·РґР°С‚СЊ РµСЃР»Рё РЅСѓР¶РЅРѕС‚ РєР°С‚Р°Р»РѕРіРё РґР»СЏ С…СЂР°РЅРµРЅРёСЏ С„Р°Р№Р»РѕРІ
 
 
 implementation
@@ -18,7 +18,7 @@ uses Vcl.Controls, vcl.forms, fmmainunit, lcb_unit, system.sysutils, dmDataUnit,
   fmGetSTOCUnit,
   data.db, extend_data, extend_dialog, fmKeywordGetunit, fmNoteEditUnit;
 
-procedure CreateIfNeedDirStore; // создать если нужнот каталоги для хранения файлов
+procedure CreateIfNeedDirStore; // СЃРѕР·РґР°С‚СЊ РµСЃР»Рё РЅСѓР¶РЅРѕС‚ РєР°С‚Р°Р»РѕРіРё РґР»СЏ С…СЂР°РЅРµРЅРёСЏ С„Р°Р№Р»РѕРІ
 const
   sf_dir: array [1..3] of string=('SourceFile','NoteFile','TelegramFile');
 var
@@ -36,7 +36,7 @@ begin
 end;
 
 
-function MoveFilesToDir:boolean; // перенести все файлы с базы во внешний каталог
+function MoveFilesToDir:boolean; // РїРµСЂРµРЅРµСЃС‚Рё РІСЃРµ С„Р°Р№Р»С‹ СЃ Р±Р°Р·С‹ РІРѕ РІРЅРµС€РЅРёР№ РєР°С‚Р°Р»РѕРі
 var
   sf: TFdquery;
   ms:TMemoryStream;
@@ -45,7 +45,7 @@ begin
 
   esr:=DM.Get_Ini_Str_Par('FileStoreDir');
   if esr='' then begin
-    msgerror('Не указан внешний каталог!');
+    msgerror('РќРµ СѓРєР°Р·Р°РЅ РІРЅРµС€РЅРёР№ РєР°С‚Р°Р»РѕРі!');
     MoveFilesToDir:=false;
     exit;
   end;
@@ -55,7 +55,7 @@ begin
 
   CreateIfNeedDirStore;
 
-  // аттачи источников
+  // Р°С‚С‚Р°С‡Рё РёСЃС‚РѕС‡РЅРёРєРѕРІ
   sf_dir:=esr+'\SourceFile\';
   sf.SQL.Text:='select * from source_attach';
   sf.Open();
@@ -69,7 +69,7 @@ begin
   end;
   sf.Close;
 
-  // аттачи заметок
+  // Р°С‚С‚Р°С‡Рё Р·Р°РјРµС‚РѕРє
   sf_dir:=esr+'\NoteFile\';
   sf.SQL.Text:='select * from note_attach';
   sf.Open();
@@ -83,7 +83,7 @@ begin
   end;
   sf.Close;
 
-  // Телеграм
+  // РўРµР»РµРіСЂР°Рј
   sf_dir:=esr+'\TelegramFile\';
   sf.SQL.Text:='select * from telegram_fast_note where file is not null';
   sf.Open();
