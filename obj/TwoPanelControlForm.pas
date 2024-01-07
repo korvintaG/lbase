@@ -15,7 +15,7 @@ const
 
 type
   TPanelTagInfo=class
-      class_id, class_id_a:longint; // классификаторы панелей текущей и противоположной
+      class_id, class_id_a:longint; // классификаторы панелей текущей и  противоположной
       gbPanel, gbPanel_a:TGroupBox; // GroupBox панелей текущей и противоположной
       dbg, dbg_a:TDBGridEh; // гриды панелей текущей и противоположной
       pnCont, pnCont_a:TPanel; // состав панелей (об источнике, заметки, ....) текущей и противоположной
