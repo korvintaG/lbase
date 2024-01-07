@@ -15,7 +15,7 @@ uses
   System.Actions, Vcl.ActnList, FireDAC.Stan.Param, FireDAC.DatS,
   FireDAC.DApt.Intf, FireDAC.DApt, FireDAC.Comp.DataSet, MemTableDataEh,
   DataDriverEh, MemTableEh, DBGridEhGrouping, ToolCtrlsEh, DBGridEhToolCtrls,
-  DynVarsEh, EhLibVCL, GridsEh, DBAxisGridsEh, DBGridEh;
+  DynVarsEh, EhLibVCL, GridsEh, DBAxisGridsEh, DBGridEh, AliasForm;
 
 const
   WM_GOTO_NOTE = WM_USER + 2001;
@@ -90,8 +90,7 @@ type
     NoteListNeedRefresh:boolean;
     KeywordListNeedRefresh:boolean;
     TelegramNeedRefresh:boolean;
-    SourceListNeedRefresh:array [0..1] of boolean; // источник или проект нуждается в обновлении
-    function setdata(bdname_:string; open_mode:TDBMode):boolean;
+    SourceListNeedRefresh:array [0..1] of boolean; // РёСЃС‚РѕС‡РЅРёРє РёР»Рё РїСЂРѕРµРєС‚ РЅСѓР¶РґР°РµС‚СЃСЏ РІ РѕР±РЅРѕРІР»РµРЅРёРё
     procedure AppMessage(var Msg: TMsg; var Handled: Boolean);
     procedure ReBuildHistory;
   end;
@@ -108,7 +107,7 @@ implementation
 
 uses
   extend_dialog, extend_diskutil, extend_ini, extend_graph,
-  display_service, URLPanels,
+  display_service, URLPanels, scale_icons,
   fmSetupUnit, data_service,dmdataUnit,
   fmNoteListunit, fmAuthorListUnit, fmSourceListUnit, fmKeywordCommanderUnit,
   fmTelegramUnit, fmKeywordJoinUnit, fmNoteEditUnit, fmNoteStatUnit,
@@ -127,6 +126,9 @@ begin
 end;
 
 procedure Tfmmain.FormCreate(Sender: TObject);
+var
+  style_, fname:string;
+  Style    : TStyleManager.TStyleServicesHandle;
 begin
   NoteListNeedRefresh:=true;
   TelegramNeedRefresh:=true;
@@ -137,6 +139,24 @@ begin
 (*KBHook:=SetWindowsHookEx(WH_KEYBOARD,   {callback >} @KeyboardHookProc,
                            HInstance,
                            GetCurrentThreadId()) ;*)
+  style_:=DM.Get_Ini_Str_Par('ColorStyle','');
+  if style_<>'' then begin
+      TStyleManager.TrySetStyle(style_);
+  end;
+
+{  fname:='C:\Projects\Progressor\lbase\scheme\Windows11_Modern_Light.vsf';
+
+   if TStyleManager.IsValidStyle( fname) then
+    begin
+      Style := TStyleManager.LoadFromFile( fname);
+      if Assigned( Style) then
+      begin
+        TStyleManager.SetStyle( Style);
+      end;
+    end;}
+
+
+  lbDBFileName.Caption:='Р¤Р°Р№Р» Р‘Р”: '+ExtractFileName(dm.sqlc.Params.Database);
 
 end;
 
@@ -187,9 +207,9 @@ end;
 
 procedure Tfmmain.lbDBFileNameDblClick(Sender: TObject);
 begin
-  if msgquestion(format('Сбросить автооткрытие файла [%s] при следующем запуске программы?',[dm.sqlc.Params.Database])) then begin
+  if msgquestion(format('РЎР±СЂРѕСЃРёС‚СЊ Р°РІС‚РѕРѕС‚РєСЂС‹С‚РёРµ С„Р°Р№Р»Р° [%s] РїСЂРё СЃР»РµРґСѓСЋС‰РµРј Р·Р°РїСѓСЃРєРµ РїСЂРѕРіСЂР°РјРјС‹?',[dm.sqlc.Params.Database])) then begin
     extend_ini.SetBoolValue('DB','AutoOpen',false);
-    msgok('Параметр автооткрытия текущей базы убран! В следующий запуск программы Вы сможете сменить файл БД или создать новый.');
+    msgok('РџР°СЂР°РјРµС‚СЂ Р°РІС‚РѕРѕС‚РєСЂС‹С‚РёСЏ С‚РµРєСѓС‰РµР№ Р±Р°Р·С‹ СѓР±СЂР°РЅ! Р’ СЃР»РµРґСѓСЋС‰РёР№ Р·Р°РїСѓСЃРє РїСЂРѕРіСЂР°РјРјС‹ Р’С‹ СЃРјРѕР¶РµС‚Рµ СЃРјРµРЅРёС‚СЊ С„Р°Р№Р» Р‘Р” РёР»Рё СЃРѕР·РґР°С‚СЊ РЅРѕРІС‹Р№.');
   end
 
 end;
@@ -225,11 +245,11 @@ var
 begin
   phone_:=dm.Get_Ini_Str_Par('TelegramPhone');
   if phone_='' then begin
-    if inputstr('Ввод данных','Укажите свой номер телефона в формате, на который зарегестрирован Ваш Telegram',phone_) then begin
+    if inputstr('Р’РІРѕРґ РґР°РЅРЅС‹С…','РЈРєР°Р¶РёС‚Рµ СЃРІРѕР№ РЅРѕРјРµСЂ С‚РµР»РµС„РѕРЅР° РІ С„РѕСЂРјР°С‚Рµ, РЅР° РєРѕС‚РѕСЂС‹Р№ Р·Р°СЂРµРіРµСЃС‚СЂРёСЂРѕРІР°РЅ Р’Р°С€ Telegram',phone_) then begin
       if phone_<>'' then
         dm.Set_Ini_Str_Par('TelegramPhone',phone_)
       else begin
-        msgerror('Номер телефона не может быть пустым!');
+        msgerror('РќРѕРјРµСЂ С‚РµР»РµС„РѕРЅР° РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј!');
         exit;
       end;
     end;
@@ -392,7 +412,7 @@ begin
   end;
   if Msg.message=WM_GOTO_SOURCE_PROJ then begin
     if dm.sqlc.ExecSQLScalar('select is_mine from source where id=:SID',[Msg.wParam])=0 then begin
-      // источник
+      // РёСЃС‚РѕС‡РЅРёРє
       if fmSourceEdit<>nil then begin
         fmSourceEdit.Close;
         Application.ProcessMessages;
@@ -401,7 +421,7 @@ begin
       fmSourceEdit.show;
     end
     else begin
-      // проект
+      // РїСЂРѕРµРєС‚
       if fmProjectEdit<>nil then begin
         fmProjectEdit.Close;
         Application.ProcessMessages;
@@ -410,7 +430,7 @@ begin
       fmProjectEdit.show;
     end;
   end;
-  if Msg.message=WM_CREATE_LINK_NOTE then begin // создать связанную заметку
+  if Msg.message=WM_CREATE_LINK_NOTE then begin // СЃРѕР·РґР°С‚СЊ СЃРІСЏР·Р°РЅРЅСѓСЋ Р·Р°РјРµС‚РєСѓ
     if fmNoteEdit<>nil then begin
         fmNoteEdit.Close;
         Application.ProcessMessages;
@@ -420,12 +440,12 @@ begin
     fmNoteEdit.corr_note_id:=Msg.wParam;
     fmNoteEdit.show;
   end;
-  if Msg.message=WM_GOTO_TASK then begin // создать задачу
+  if Msg.message=WM_GOTO_TASK then begin // СЃРѕР·РґР°С‚СЊ Р·Р°РґР°С‡Сѓ
     if fmTaskEdit<>nil then begin
         fmTaskEdit.Close;
         Application.ProcessMessages;
     end;
-    if Msg.wParam=0 then  // создание
+    if Msg.wParam=0 then  // СЃРѕР·РґР°РЅРёРµ
       fmTaskEdit := TfmTaskEdit.CreateWithData(0, Msg.lParam,dbInsert,fmmain)
     else
       fmTaskEdit := TfmTaskEdit.CreateWithData(Msg.wParam, Msg.lParam,dbEdit,fmmain);
@@ -434,106 +454,6 @@ begin
 end;
 
 
-function TfmMain.setdata(bdname_:string; open_mode:TDBMode):boolean;
-var
-  sqls_, dir:string;
-  style_:string;
-  fdq:TFdquery;
-begin
-  dm.sqlc.Params.Database:=bdname_;
-  if open_mode=dbInsert then begin
-    dm.sqlc.open;
-    sqls_:= extend_diskutil.GetStrFromAppResource('create_db_script');
-    dm.sqlc.ExecSQL(sqls_);
-
-    sqls_:= extend_diskutil.GetStrFromAppResource('fill_new_db');
-    dm.sqlc.ExecSQL(sqls_,['Книга',
-                        'Видео-ролик',
-                        'WEB-страница, сайт',
-                        'Публикация',
-                        'Telegram пост',
-                        'Письмо',
-                        'Статья',
-                        'Следует за',
-                        'Предшествует']);
-
-    {Stream := TResourceStream.Create(HInstance, 'fill_new_db', RT_RCDATA);
-    List.LoadFromStream(Stream);
-    sqls_:= List.text;
-    Stream.Free;
-    sqlc.ExecSQL(sqls_,[ML.GetCommonMessage('SQLiteBook'),
-                        ML.GetCommonMessage('SQLiteVideo'),
-                        ML.GetCommonMessage('SQLiteWWW'),
-                        ML.GetCommonMessage('SQLitePublication'),
-                        ML.GetCommonMessage('SQLiteTelegram'),
-                        ML.GetCommonMessage('SQLiteEmail'),
-                        ML.GetCommonMessage('SQLiteArticle'),
-                        ML.GetCommonMessage('SQLiteRouteAfter'),
-                        ML.GetCommonMessage('SQLiteRouteBefore')
-                          ]);}
-  end
-  else begin
-    try
-      dm.sqlc.Connected:=TRUE;
-      dm.add_new_ddl_object;
-      dm.struct_add_new_fields;
-      dm.add_new_service_rows;
-      //check_db_correct;
-      if DM.Get_Ini_Int_Par('FileStorePlace')=1 then begin
-        fdq:=tFdquery.Create(nil);
-        fdq.Connection:=dm.sqlc;
-        fdq.SQL.Text:='select id from telegram_fast_note where date_time_create<date("now","-'+inttostr(dm.Get_Ini_Int_Par('TelegramNoteSaveDay',30))+' days")  and status=1 and file is not null';
-        fdq.Open();
-        dir:=DM.Get_Ini_Str_Par('FileStoreDir')+'\TelegramFile\';
-        while not fdq.eof do begin
-          if fileexists(dir+inttostr(fdq['id'])) then
-            deletefile(dir+inttostr(fdq['id']));
-
-          fdq.Next;
-        end;
-        fdq.Close;
-        fdq.Free;
-      end;
-
-      dm.sqlc.ExecSQL('delete from telegram_fast_note where date_time_create<date("now","-'+inttostr(dm.Get_Ini_Int_Par('TelegramNoteSaveDay',30))+' days")  and status=1');
-      dm.sqlc.ExecSQL('update source_keyword set keyword_name_id = (select keyword_name.id from keyword_name, keyword where keyword.id=source_keyword.keyword_id and keyword_name.name=keyword.name_main and keyword.id=keyword_name.keyword_id) where keyword_name_id is null');
-      dm.sqlc.ExecSQL('update source set date_time_update=date_time_create where date_time_update is null');
-      CreateIfNeedDirStore;
-
-      dm.RefillKWNExpanded;
-
-      dm.sqlc.ExecSQL('update keyword '+
-                      'set '+
-                      '  all_use_count=(select count(*) from note_keyword where keyword_id=keyword.id)+'+
-                      '                (select count(*) from source_keyword where keyword_id=keyword.id)+'+
-                      '        				 (select count(*) from task_keyword where keyword_id=keyword.id)+'+
-                      '       				 (select count(*) from STOC_keyword where keyword_id=keyword.id)+'+
-                      '        				 (select count(*) from note_expanded_keyword where keyword_id=keyword.id)');
-
-
-
-      //sqlc.ExecSQL('VACUUM;');
-    except
-      msgerror('Ошибка - база уже открыта!');
-      setdata:=false;
-      exit
-    end;
-  end;
-  {open_datasets;
-  dblsource.KeyValue:=Get_Ini_Int_Par('Default_Source',0);
-  cbMode.ItemIndex:=Get_Ini_Int_Par('Mode',0);
-  setNewMode(cbMode.ItemIndex);
-  set_top_panel_location;}
-  lbDBFileName.Caption:='Файл БД: '+ExtractFileName(bdname_);
-
-  style_:=DM.Get_Ini_Str_Par('ColorStyle','');
-  if style_<>'' then begin
-      TStyleManager.TrySetStyle(style_);
-  end;
-
-
-  setdata:=true;
-end;
 
 
 procedure TfmMain.ReBuildHistory;
@@ -542,7 +462,7 @@ var
   fdq:tFdquery;
   i:integer;
 begin
-  lcb.Log('rebuildmenu - начало');
+  lcb.Log('rebuildmenu - РЅР°С‡Р°Р»Рѕ');
   for I := mnHistory.Count-1 downto 0 do begin
      //mnHistory.Delete(i);
      mnHistory.Items[i].Destroy;
@@ -577,8 +497,10 @@ begin
   end;
   fdq.Close;
   fdq.Free;
+  self.scale_menu;
 
-  lcb.Log('rebuildmenu - конец');
+
+  lcb.Log('rebuildmenu - РєРѕРЅРµС†');
 
 end;
 

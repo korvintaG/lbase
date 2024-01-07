@@ -96,11 +96,11 @@ var
   cnt_:integer;
   aid_:longint;
 begin
-  if msgquestion(format('Удалить автора [%s]?',[fdqAuthor['name']])) then begin
+  if msgquestion(format('РЈРґР°Р»РёС‚СЊ Р°РІС‚РѕСЂР° [%s]?',[fdqAuthor['name']])) then begin
     aid_:=fdqAuthor['id'];
     cnt_:=dm.sqlc.ExecSQLScalar('select count(*) from source_author where author_id=:ID',[fdqAuthor['id']]);
     if cnt_>0 then begin
-        msgerror(format('На автора [%s] в базе назначено %s книг. Чтобы удалить автора, вначале уберите привязку его к книгам!',[fdqAuthor['name'],inttostr(cnt_)]));
+        msgerror(format('РќР° Р°РІС‚РѕСЂР° [%s] РІ Р±Р°Р·Рµ РЅР°Р·РЅР°С‡РµРЅРѕ %s РєРЅРёРі. Р§С‚РѕР±С‹ СѓРґР°Р»РёС‚СЊ Р°РІС‚РѕСЂР°, РІРЅР°С‡Р°Р»Рµ СѓР±РµСЂРёС‚Рµ РїСЂРёРІСЏР·РєСѓ РµРіРѕ Рє РєРЅРёРіР°Рј!',[fdqAuthor['name'],inttostr(cnt_)]));
         exit
     end;
     fdqAuthor.delete;
@@ -114,7 +114,7 @@ var
 begin
   if null2int(fdqAuthor['id'])>0 then begin
     str_:=fdqAuthor['name'];
-    if inputstr('Редактирование данных','Укажите исправленное ФИО автора:',str_) then begin
+    if inputstr('Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С…','РЈРєР°Р¶РёС‚Рµ РёСЃРїСЂР°РІР»РµРЅРЅРѕРµ Р¤РРћ Р°РІС‚РѕСЂР°:',str_) then begin
       fdqAuthor.edit;
       fdqAuthor['name']:=str_;
       fdqAuthor.post;
@@ -126,7 +126,7 @@ procedure TfmAuthorList.mnAddClick(Sender: TObject);
 var
   str_:string;
 begin
-  if inputstr('Ввод данных','Укажите ФИО нового автора:',str_) then begin
+  if inputstr('Р’РІРѕРґ РґР°РЅРЅС‹С…','РЈРєР°Р¶РёС‚Рµ Р¤РРћ РЅРѕРІРѕРіРѕ Р°РІС‚РѕСЂР°:',str_) then begin
     fdqAuthor.Insert;
     fdqAuthor['name']:=str_;
     fdqAuthor['date_time_create']:=Now;

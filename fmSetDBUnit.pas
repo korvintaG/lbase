@@ -49,7 +49,7 @@ begin
  if savedialog.Execute then begin
     filename:=savedialog.FileName;
     if fileexists(filename) then begin
-      if msgquestion(format('Файл [%s] уже существует. Перезаписать?',[filename])) then begin
+      if msgquestion(format('Р¤Р°Р№Р» [%s] СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚. РџРµСЂРµР·Р°РїРёСЃР°С‚СЊ?',[filename])) then begin
         DeleteFile(filename);
       end
       else
@@ -71,7 +71,7 @@ begin
  if savedialog.Execute then begin
     filename:=savedialog.FileName;
     if fileexists(filename) then begin
-      if msgquestion(format('Файл [%s] уже существует. Перезаписать?',[filename])) then begin
+      if msgquestion(format('Р¤Р°Р№Р» [%s] СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚. РџРµСЂРµР·Р°РїРёСЃР°С‚СЊ?',[filename])) then begin
         DeleteFile(filename);
       end
       else
