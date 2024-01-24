@@ -65,6 +65,10 @@ begin
           (Components[i] as TDbRichEditEh).ParentFont:=true;
           (Components[i] as TDbRichEditEh).ParentColor:=true;
         end;
+        if (Components[i] is TRichEdit)  then begin
+          (Components[i] as TRichEdit).ParentFont:=true;
+          (Components[i] as TRichEdit).ParentColor:=true;
+        end;
 
   end;
 

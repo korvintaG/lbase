@@ -118,10 +118,12 @@ begin
 
   if mr_=mrOk then begin
     //TStyleManager.TrySetStyle('Amakrits');
-  Application.CreateForm(TDM, DM);
-  Application.CreateForm(Tfmmain, fmmain);
-  if fmMain.setdata(fmSetDB.filename, dbEdit) then
-      fmmain.Show
+    Application.CreateForm(TDM, DM);
+    if DM.setdata(fmSetDB.filename, dbEdit) then begin
+        Application.CreateForm(Tfmmain, fmmain);
+        fmmain.scale_form;
+        fmmain.Show
+    end
     else begin
       TerminateProcess( GetCurrentProcess, 0 );
     end;
@@ -129,9 +131,11 @@ begin
 
   else if mr_=mrRetry then begin
     Application.CreateForm(Tdm, dm);
-    Application.CreateForm(TfmMain, fmMain);
-    if fmMain.setdata(fmSetDB.filename, dbInsert) then
+    if DM.setdata(fmSetDB.filename, dbInsert) then begin
+      Application.CreateForm(TfmMain, fmMain);
+      fmmain.scale_form;
       fmmain.Show
+    end
     else begin
       TerminateProcess( GetCurrentProcess, 0 );
     end;

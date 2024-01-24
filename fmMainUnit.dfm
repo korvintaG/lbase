@@ -43,10 +43,11 @@ object fmmain: Tfmmain
   end
   object MainMenu: TMainMenu
     Images = TreeImage
+    OwnerDraw = True
     Left = 40
     Top = 64
     object mnInput: TMenuItem
-      Caption = #1047#1085#1072#1085#1080#1077
+      Caption = #1047#1085#1072#1085#1080#1077'      '
       object mnNotes: TMenuItem
         Caption = #1047#1072#1084#1077#1090#1082#1080'/'#1080#1076#1077#1080
         ImageIndex = 3
@@ -93,7 +94,7 @@ object fmmain: Tfmmain
       end
     end
     object mnService: TMenuItem
-      Caption = #1057#1077#1088#1074#1080#1089
+      Caption = #1057#1077#1088#1074#1080#1089'          '
       object mnParams: TMenuItem
         Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080' '#1089#1080#1089#1090#1077#1084#1099
         ImageIndex = 49
@@ -154,7 +155,7 @@ object fmmain: Tfmmain
     Left = 628
     Top = 32
     Bitmap = {
-      494C01013B0098008C0410001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C01013B009404A40410001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000F0000000010020000000000000F0
       000000000000000000000000000000000000000000000000001D000000340000
       003600000036000000366F3D1EC5C38457FFD38B67FFE18F6FFFDC8D6BFFDA8B
