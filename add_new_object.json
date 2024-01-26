@@ -1,0 +1,92 @@
+[
+    {
+        "TYPE": "index",
+        "NAME": "kw_name_uni",
+        "VALUE": "CREATE UNIQUE INDEX 'kw_name_uni' ON 'keyword_name' ('keyword_id', 'name')"
+    },
+    {
+        "TYPE": "index",
+        "NAME": "kw_main_uni",
+        "VALUE": "CREATE UNIQUE INDEX 'kw_main_uni' ON 'keyword' ('class_keyword_id', 'name_main')"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "keyword_link2",
+        "VALUE": "CREATE TABLE 'keyword_link2' ('id' INTEGER NOT NULL UNIQUE, 'link_type' INTEGER NOT NULL, 'keyword1_id' INTEGER NOT NULL, 'keyword2_id' INTEGER NOT NULL, PRIMARY KEY('id' AUTOINCREMENT))"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "telegram_fast_note",
+        "VALUE": "CREATE TABLE 'telegram_fast_note' ('id' INTEGER NOT NULL UNIQUE,'telegram_message_id'	INTEGER NOT NULL,'text'	TEXT,'status'	INTEGER DEFAULT 0,'file_unique_id' TEXT, 'file_remote_id' TEXT, 'file_session_id' INTEGER, 'file' BLOB, 'local_file_name' TEXT, 'date_time_create' DATETIME,'web_page_url' TEXT,'web_page_type' TEXT,'web_page_title' TEXT,'file_ext'	TEXT,'message_type' TEXT, PRIMARY KEY('id' AUTOINCREMENT))"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "tmp_KW_Analyze_Exclude",
+        "VALUE": "CREATE TABLE 'tmp_KW_Analyze_Exclude' (	'id'	INTEGER NOT NULL UNIQUE, 'order_' INTEGER, 'kw_name_id'	INTEGER NOT NULL UNIQUE, 'kw_id' INTEGER NOT NULL, PRIMARY KEY('id'))"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "tmp_KW_Analyze_MayBe",
+        "VALUE": "CREATE TABLE 'tmp_KW_Analyze_MayBe' ('id' INTEGER NOT NULL UNIQUE,'order_' INTEGER, 'kw_name_id' INTEGER NOT NULL UNIQUE, 'kw_id' INTEGER NOT NULL, PRIMARY KEY('id'))"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "tmp_KW_Analyze_Obligatory",
+        "VALUE": "CREATE TABLE 'tmp_KW_Analyze_Obligatory' ('id'	INTEGER NOT NULL UNIQUE,'order_'	INTEGER,'kw_name_id'	INTEGER NOT NULL UNIQUE,'kw_id'	INTEGER NOT NULL,PRIMARY KEY('id'))"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "tmp_KW_Analyze_Related",
+        "VALUE": "CREATE TABLE 'tmp_KW_Analyze_Related' (	'id'	INTEGER NOT NULL UNIQUE, 'order_'	INTEGER,	'kw_name_id'	INTEGER NOT NULL UNIQUE, 'kw_id' INTEGER NOT NULL, PRIMARY KEY('id'))"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "tmp_KW_notes",
+        "VALUE": "CREATE TABLE 'tmp_KW_notes' (	'id'	INTEGER NOT NULL UNIQUE,	'name'	TEXT NOT NULL,	PRIMARY KEY('id'))"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "note_expanded_keyword",
+        "VALUE": "CREATE TABLE 'note_expanded_keyword' (	'id'	INTEGER NOT NULL UNIQUE,	'note_id'	INTEGER NOT NULL,	'keyword_id'	INTEGER NOT NULL,	'keyword_name_id'	integer NOT NULL,	'type_'	INTEGER NOT NULL DEFAULT 0,	'parent_id'	INTEGER NOT NULL,	PRIMARY KEY('id' AUTOINCREMENT))"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "stoc_keyword",
+        "VALUE": "CREATE TABLE 'stoc_keyword' ('id' INTEGER NOT NULL UNIQUE, 'source_id' INTEGER NOT NULL, 'stoc_id' INTEGER NOT NULL, 'keyword_id' INTEGER NOT NULL, keyword_name_id integer, UNIQUE('stoc_id','keyword_id'), PRIMARY KEY('id' AUTOINCREMENT))"
+    },
+    {
+        "TYPE": "index",
+        "NAME": "nekw_keyword_id",
+        "VALUE": "CREATE INDEX 'nekw_keyword_id' ON 'note_expanded_keyword' ('keyword_id')"
+    },
+    {
+        "TYPE": "index",
+        "NAME": "note_kw_keyword_id",
+        "VALUE": "CREATE INDEX 'note_kw_keyword_id' ON 'note_keyword' ('keyword_id')"
+    },
+    {
+        "TYPE": "index",
+        "NAME": "note_attach_note_id",
+        "VALUE": "CREATE INDEX 'note_attach_note_id' ON 'note_attach' ('note_id')"
+    },
+    {
+        "TYPE": "index",
+        "NAME": "note_url_note_id",
+        "VALUE": "CREATE INDEX 'note_url_note_id' ON 'note_url' ('note_id')"
+    },
+    {
+        "TYPE": "index",
+        "NAME": "note_ekw_keyword_id",
+        "VALUE": "CREATE INDEX 'note_ekw_keyword_id' ON 'note_expanded_keyword' ('keyword_id')"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "task",
+        "VALUE": "CREATE TABLE 'task' ('id' INTEGER NOT NULL UNIQUE, 'name' TEXT NOT NULL, 'content' TEXT NOT NULL, 'type_' INTEGER NOT NULL DEFAULT 0, 'deadline' DATETIME, 'date_time_create' DATETIME, 'status' INTEGER NOT NULL DEFAULT 0, 'date_time_close' DATETIME, 'task_id' INTEGER, PRIMARY KEY('id' AUTOINCREMENT))"
+    },
+    {
+        "TYPE": "table",
+        "NAME": "task_keyword",
+        "VALUE": "CREATE TABLE 'task_keyword' ('id' INTEGER NOT NULL UNIQUE, 'task_id' INTEGER NOT NULL, 'keyword_id' INTEGER NOT NULL, 'keyword_name_id' INTEGER NOT NULL, PRIMARY KEY('id' AUTOINCREMENT))"
+    }
+]

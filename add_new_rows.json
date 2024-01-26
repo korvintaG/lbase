@@ -1,0 +1,21 @@
+[
+    {
+        "TABLE": "source_type",
+        "COLUMN": "name",
+        "VALUE": "Беседа",
+        "ID": "9"
+    },
+    {
+        "TABLE": "source_type",
+        "COLUMN": "name",
+        "VALUE": "Лекция",
+        "ID": "10"
+    },
+    {
+        "TABLE": "source_type",
+        "COLUMN": "name",
+        "VALUE": "Рецензия",
+        "ID": "11"
+    }
+
+]

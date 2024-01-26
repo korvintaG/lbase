@@ -1,0 +1,83 @@
+[
+    {
+        "TABLE": "note",
+        "FIELD": "telegram_message_id",
+        "TYPE": "TEXT"
+    },
+    {
+        "TABLE": "source",
+        "FIELD": "telegram_message_id",
+        "TYPE": "TEXT"
+    },
+    {
+        "TABLE": "keyword",
+        "FIELD": "note",
+        "TYPE": "TEXT"
+    },
+    {
+        "TABLE": "keyword_name",
+        "FIELD": "note",
+        "TYPE": "TEXT"
+    },
+    {
+        "TABLE": "tmp_left_keyword",
+        "FIELD": "def",
+        "TYPE": "TEXT"
+    },
+    {
+        "TABLE": "tmp_right_keyword",
+        "FIELD": "def",
+        "TYPE": "TEXT"
+    },
+    {
+        "TABLE": "tmp_left_keyword",
+        "FIELD": "interest_count",
+        "TYPE": "integer"
+    },
+    {
+        "TABLE": "tmp_right_keyword",
+        "FIELD": "interest_count",
+        "TYPE": "integer"
+    },
+    {
+        "TABLE": "tmp_left_keyword",
+        "FIELD": "class_name_before",
+        "TYPE": "TEXT"
+    },
+    {
+        "TABLE": "tmp_right_keyword",
+        "FIELD": "class_name_before",
+        "TYPE": "TEXT"
+    },
+    {
+        "TABLE": "tmp_left_keyword",
+        "FIELD": "source_cnt",
+        "TYPE": "integer"
+    },
+    {
+        "TABLE": "tmp_right_keyword",
+        "FIELD": "source_cnt",
+        "TYPE": "integer"
+    },
+    {
+        "TABLE": "tmp_KW_Analyze_MayBe",
+        "FIELD": "note_cnt",
+        "TYPE": "integer"
+    },
+    {
+        "TABLE": "source_keyword",
+        "FIELD": "keyword_name_id",
+        "TYPE": "integer"
+    },
+    {
+        "TABLE": "source",
+        "FIELD": "date_time_update",
+        "TYPE": "datetime"
+    },
+    {
+        "TABLE": "keyword",
+        "FIELD": "all_use_count",
+        "TYPE": "integer"
+    }
+
+]

@@ -1,0 +1,13 @@
+delete from filter;
+delete from filter_keyword;
+delete from filter_author;
+delete from filter_source;
+delete from filter_interest;
+delete from filter_project;
+delete from tmp_left_keyword;
+delete from tmp_right_keyword;
+delete from tmp_left_projects;
+delete from tmp_right_projects;
+delete from tmp_left_sources;
+delete from tmp_right_sources;
+delete from tmp_source_classification;
